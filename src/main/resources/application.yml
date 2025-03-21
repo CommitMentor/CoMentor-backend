@@ -1,0 +1,16 @@
+spring:
+  profiles:
+    include: secret
+  application:
+    name: CoMentor-BE
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show_sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+logging:
+    level:
+        org.springframework.security: DEBUG
