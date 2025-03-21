@@ -37,7 +37,7 @@ public class JwtTokenProvider {
         Date expiration = new Date(now.getTime() + ACCESS_TOKEN_EXPIRATION);
 
         return Jwts.builder()
-                .setClaims(claims)       // 클레임
+                .setClaims(claims)       // 클레임 정보
                 .setIssuedAt(now)        // 발급 시간
                 .setExpiration(expiration) // 만료 시간
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY) // 서명

@@ -15,8 +15,7 @@ import java.util.List;
 @Table(name = "tb_user")
 public class User {
     @Id
-    @GeneratedValue
-    @Column(name = "user_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)

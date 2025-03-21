@@ -14,7 +14,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 
-
 @RequiredArgsConstructor
 @Component
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
@@ -25,27 +24,27 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        // accessToken, refreshToken 발급
-        // 1) 사용자 정보 확인 (Authentication에서 githubId 추출)
+        // GitHub ID 추출
         String githubId = authentication.getName();
 
-        // 2) Access Token, Refresh Token 생성
+        // Access Token과 Refresh Token 발급
         String accessToken = tokenProvider.createAccessToken(githubId, authentication.getAuthorities().toString());
         String refreshToken = tokenProvider.createRefreshToken(githubId);
 
-        // 3) Refresh Token을 DB에 저장
+        // Refresh Token을 DB에 저장
         User user = userService.findByGithubId(githubId);
         user.updateRefreshToken(refreshToken);
         userService.saveUser(user);
 
-        response.setHeader("Authorization", "Bearer " + accessToken);  // Authorization 헤더에 Access Token 추가
+        // Authorization 헤더에 Access Token 추가 (이 부분은 리디렉션이 아닌 API 호출 시에 사용될 것)
+        response.setHeader("Authorization", "Bearer " + accessToken);
 
-        // 4) 필요한 경우 Refresh Token을 쿠키로 전달하거나, DB만 저장하고 Access Token만 리다이렉트로 전달
+        // 리디렉션 URL 생성
         String redirectUrl = UriComponentsBuilder.fromUriString(REDIRECT_URI)
                 .queryParam("accessToken", accessToken)
                 .build().toUriString();
 
+        // 리디렉션
         response.sendRedirect(redirectUrl);
     }
-
 }

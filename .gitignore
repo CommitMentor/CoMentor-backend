@@ -12,8 +12,12 @@
 .idea/**/dictionaries
 .idea/**/shelf
 
-#yml
-.resources/**/application-secret.yml
+# src/main/resources 폴더에 있을 때
+/src/main/resources/application-secret.yml
+
+# 경로 상관없이 같은 이름 파일 모두 제외
+**/application-secret.yml
+
 
 # AWS User-specific
 .idea/**/aws.xml

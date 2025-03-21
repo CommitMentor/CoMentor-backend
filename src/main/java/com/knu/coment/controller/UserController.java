@@ -2,9 +2,13 @@ package com.knu.coment.controller;
 
 import com.knu.coment.dto.UserUpdateDto;
 import com.knu.coment.entity.User;
+import com.knu.coment.global.code.Api_Response;
+import com.knu.coment.global.code.SuccessCode;
 import com.knu.coment.security.JwtTokenProvider;
 import com.knu.coment.security.TokenKey;
 import com.knu.coment.service.UserService;
+import com.knu.coment.util.ApiResponseUtil;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,22 +27,15 @@ public class UserController {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Operation(summary = "회원가입", description = "회원가입 시 필수 추가 정보를 등록 API 입니다.")
     @PostMapping("/join")
-    public ResponseEntity<?> joinUser(@AuthenticationPrincipal UserDetails userDetails,
-                                      @RequestBody UserUpdateDto userUpdateDto) {
-        if (userDetails == null || userDetails.getUsername() == null) {
-            return ResponseEntity.badRequest().body("로그인 정보가 없습니다.");
-        }
+    public ResponseEntity<Api_Response<UserUpdateDto>> joinUser(@AuthenticationPrincipal UserDetails userDetails,
+                                                 @RequestBody UserUpdateDto userUpdateDto) {
 
         String githubId = userDetails.getUsername();
-        User existingUser = userService.findByGithubId(githubId);
-        if (existingUser == null) {
-            return ResponseEntity.badRequest().body("해당 GitHub ID의 사용자가 존재하지 않습니다.");
-        }
-
-        // userService.join() 통해 가입 완료
-        User updatedUser = userService.join(existingUser.getId(), userUpdateDto);
-        return ResponseEntity.ok(updatedUser);
+        userService.join(githubId, userUpdateDto);
+        return ApiResponseUtil.createSuccessResponse(
+                SuccessCode.INSERT_SUCCESS.getMessage());
     }
 
     @PostMapping("/refresh")
@@ -54,16 +51,13 @@ public class UserController {
         return ResponseEntity.ok(newAccessToken);
     }
 
-    @GetMapping("/info")
-    public ResponseEntity<?> getMyInfo(@AuthenticationPrincipal OAuth2User oAuth2User) {
-        if (oAuth2User == null || oAuth2User.getAttribute("id") == null) {
-            return ResponseEntity.badRequest().body("로그인 정보가 없습니다.");
-        }
-
-        String githubId = oAuth2User.getAttribute("id").toString();
-        // DB에서 찾아서 전체 User 정보 반환 (DTO 변환 권장)
-        User user = userService.findByGithubId(githubId);
-        return ResponseEntity.ok(user);
-    }
+//    @GetMapping("/info")
+//    public ResponseEntity<Api_Response<UserUpdateDto>> getUserInfo(@AuthenticationPrincipal OAuth2User oAuth2User) {
+//        String githubId = oAuth2User.getAttribute("login");
+//        UserUpdateDto userUpdateDto = userService.getUserInfo(githubId);
+//        return ApiResponseUtil.createSuccessResponse(
+//                SuccessCode.SELECT_SUCCESS.getMessage(),
+//                userUpdateDto);
+//    }
 
 }
