@@ -2,7 +2,6 @@ package com.knu.coment.config;
 
 import com.knu.coment.config.auth.CustomOAuth2UserService;
 import com.knu.coment.config.auth.OAuth2SuccessHandler;
-import com.knu.coment.security.JwtAuthenticationFilter;
 import com.knu.coment.security.JwtTokenProvider;
 import com.knu.coment.service.UserService;
 import lombok.RequiredArgsConstructor;
