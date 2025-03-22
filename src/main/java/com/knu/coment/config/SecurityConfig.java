@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 new AntPathRequestMatcher("/login/oauth2/github"),
+                                new AntPathRequestMatcher("/health"),
                                 new AntPathRequestMatcher("/login/**"),
                                 new AntPathRequestMatcher("/error"),
                                 new AntPathRequestMatcher("/swagger-ui/**"),
