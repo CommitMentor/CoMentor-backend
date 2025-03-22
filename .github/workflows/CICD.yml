@@ -40,8 +40,8 @@ jobs:
 
     - name: Build Docker Image
       if: github.event_name == 'push'
-      run: docker build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }} .
-      
+      run: docker build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}:latest .
+
     - name: Push Docker Image to Docker Hub
       if: github.event_name == 'push'
       run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}:latest
