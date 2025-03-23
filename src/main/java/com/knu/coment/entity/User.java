@@ -1,13 +1,13 @@
 package com.knu.coment.entity;
 
 import com.knu.coment.global.Role;
-import com.knu.coment.global.Stack;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -30,25 +30,24 @@ public class User {
     @Column(unique = true)
     private String githubId;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<UserStack> userStacks;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<UserStack> userStacks = new HashSet<>();
 
     private String refreshToken;
 
     @Builder
-    public User(String userName, String email, Boolean notification, Role userRole, String githubId, List<UserStack> userStacks){
+    public User(String userName, String email, Boolean notification, Role userRole, String githubId, Set<UserStack> userStacks){
         this.userName = userName;
         this.email = email;
         this.notification = notification;
         this.userRole = userRole;
         this.githubId = githubId;
-        this.userStacks = userStacks;
-
+        this.userStacks = userStacks != null ? userStacks : new HashSet<>();
     }
 
-    public User update(String email, Boolean notification, List<UserStack> userStacks) {
-        this.notification = notification;
-        this.email = email;
+    public User update(String email, Boolean notification, Set<UserStack> userStacks) {
+        if(email != null) this.email = email;
+        if (notification != null) this.notification = notification;
         this.userStacks = userStacks;
         return this;
     }
@@ -59,12 +58,6 @@ public class User {
 
     public String getRoleKey() {
         return this.userRole.getKey();
-    }
-
-    public User creatGithub(String name, String githubId) {
-        this.userName = name;
-        this.githubId = githubId;
-        return this;
     }
 
     public void updateRefreshToken(String refreshToken) {

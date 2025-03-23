@@ -11,6 +11,7 @@ public enum UserErrorCode implements ErrorCode {
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "User with the specified ID was not found."),
 
     // 400
+    INVALID_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "Invalid refresh token."),
     INVALID_USER_ID(HttpStatus.BAD_REQUEST, "Invalid user ID provided."),
     INVALID_USER_DATA(HttpStatus.BAD_REQUEST, "Invalid user data provided."),
     MISSING_REQUIRED_FIELD(HttpStatus.BAD_REQUEST, "Required field is missing."),
@@ -22,6 +23,10 @@ public enum UserErrorCode implements ErrorCode {
     UPDATE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while updating the user information."),
     INSERT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while inserting the user information."),
     SELECT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while selecting the user information."),
+
+    //409
+    WITHDRAWN_USER(HttpStatus.CONFLICT, "User is already withdrawn."),
+    ALREADY_JOINED_USER(HttpStatus.CONFLICT, "User is already joined.")
 
     ;
 
