@@ -45,10 +45,11 @@ public class User {
         this.userStacks = userStacks != null ? userStacks : new HashSet<>();
     }
 
-    public User update(String email, Boolean notification, Set<UserStack> userStacks) {
+    public User update(String email, Boolean notification, Set<UserStack> stacks) {
         if(email != null) this.email = email;
         if (notification != null) this.notification = notification;
-        this.userStacks = userStacks;
+        this.userStacks.clear();
+        this.userStacks.addAll(stacks);
         return this;
     }
 

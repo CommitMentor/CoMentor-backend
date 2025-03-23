@@ -2,14 +2,15 @@ package com.knu.coment.dto;
 
 import com.knu.coment.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Getter
-public class UserUpdateDto {
+public class UserDto {
     @NotNull(message = "email cannot be null")
     @Schema(description = "사용자 이메일", example = "example@gmail.com")
     private String email;
@@ -17,17 +18,17 @@ public class UserUpdateDto {
     @Schema(description = "알림 설정", example = "true")
     private boolean notification;
     @NotNull(message = "stackNames cannot be null")
-    @Schema(description = "사용자 스택 배열", example = "[\"FRONTEND\", \"BACKEND\",\"CLOUD\",\"DB\",\"ALGORITHM\"]")
-    private List<String> stackNames;
+    @Schema(description = "사용자 스택 배열", example = "[\"FRONTEND\", \"BACKEND\",\"DB\",\"ALGORITHM\"]")
+    private Set<@NotBlank(message = "stack name cannot be blank") String> stackNames;
 
-    public UserUpdateDto(String  email, boolean notification, List<String> stackNames) {
+    public UserDto(String  email, boolean notification, Set<String> stackNames) {
         this.email = email;
         this.notification = notification;
         this.stackNames = stackNames;
     }
-    public static UserUpdateDto fromEntity(User user) {
-        return new UserUpdateDto(user.getEmail(), user.getNotification(), user.getUserStacks().stream()
+    public static UserDto fromEntity(User user) {
+        return new UserDto(user.getEmail(), user.getNotification(), user.getUserStacks().stream()
                 .map(userStack -> userStack.getStackName().name())
-                .collect(Collectors.toList()));
+                .collect(Collectors.toSet()));
     }
 }
