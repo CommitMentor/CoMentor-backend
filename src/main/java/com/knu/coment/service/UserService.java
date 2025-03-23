@@ -1,7 +1,7 @@
 package com.knu.coment.service;
 
 import com.knu.coment.config.auth.dto.OAuthAttributes;
-import com.knu.coment.dto.UserUpdateDto;
+import com.knu.coment.dto.UserDto;
 import com.knu.coment.entity.UserStack;
 import com.knu.coment.exception.UserExceptionHandler;
 import com.knu.coment.exception.code.UserErrorCode;
@@ -39,32 +39,21 @@ public class UserService {
     }
 
 
-    public User join(String githubId, UserUpdateDto dto) {
+    public User join(String githubId, UserDto dto) {
         User user = findByGithubId(githubId);
-
         if (user.getUserRole() == Role.USER) {
             throw new UserExceptionHandler(UserErrorCode.ALREADY_JOINED_USER);
         }
-
-        List<UserStack> stacks = Optional.ofNullable(dto.getStackNames())
-                .orElse(Collections.emptyList())
-                .stream()
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .distinct()
+        Set<UserStack> stacks = dto.getStackNames().stream()
                 .map(name -> new UserStack(user, Stack.valueOf(name)))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
 
-        if (stacks.isEmpty()) {
-            throw new UserExceptionHandler(UserErrorCode.INVALID_USER_DATA);
-        }
-
-        user.update(dto.getEmail(), dto.isNotification(), (Set<UserStack>) stacks);
+        user.update(dto.getEmail(), dto.isNotification(), stacks);
         user.updateRole(Role.USER);
 
         return userRepository.save(user);
     }
+
 
 
     public User renewRefreshToken(String githubId) {
@@ -82,15 +71,15 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public UserUpdateDto getUserInfo(String githubId) {
+    public UserDto getUserInfo(String githubId) {
         User user = findByGithubId(githubId);
-        return UserUpdateDto.fromEntity(user);
+        return UserDto.fromEntity(user);
     }
 
-    public User updateInfo(String githubId, UserUpdateDto userUpdateDto) {
+    public User updateInfo(String githubId, UserDto userDto) {
         User user = findByGithubId(githubId);
 
-        Set<Stack> newStackSet = userUpdateDto.getStackNames().stream()
+        Set<Stack> newStackSet = userDto.getStackNames().stream()
                 .map(String::trim)
                 .filter(stack -> !stack.isEmpty())
                 .map(Stack::valueOf)

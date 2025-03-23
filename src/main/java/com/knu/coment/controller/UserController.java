@@ -1,6 +1,6 @@
 package com.knu.coment.controller;
 
-import com.knu.coment.dto.UserUpdateDto;
+import com.knu.coment.dto.UserDto;
 import com.knu.coment.entity.User;
 import com.knu.coment.global.code.Api_Response;
 import com.knu.coment.global.code.SuccessCode;
@@ -16,10 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Tag(name = "USER 컨트롤러", description = "USER API입니다.")
 @RestController
@@ -37,11 +34,11 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "회원가입 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
     })
-    public ResponseEntity<Api_Response<UserUpdateDto>> joinUser(@AuthenticationPrincipal UserDetails userDetails,
-                                                 @RequestBody UserUpdateDto userUpdateDto) {
+    public ResponseEntity<Api_Response<UserDto>> joinUser(@AuthenticationPrincipal UserDetails userDetails,
+                                                          @RequestBody UserDto userDto) {
 
         String githubId = userDetails.getUsername();
-        userService.join(githubId, userUpdateDto);
+        userService.join(githubId, userDto);
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.INSERT_SUCCESS.getMessage());
     }
@@ -54,9 +51,9 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "조회 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
     })
-    public ResponseEntity<Api_Response<UserUpdateDto>> getUserInfo(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Api_Response<UserDto>> getUserInfo(@AuthenticationPrincipal UserDetails userDetails) {
         String githubId = userDetails.getUsername();
-        UserUpdateDto userInfo = userService.getUserInfo(githubId);
+        UserDto userInfo = userService.getUserInfo(githubId);
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 userInfo);
@@ -70,10 +67,10 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "조회 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
     })
-    public ResponseEntity<Api_Response<UserUpdateDto>> updateUserInfo(@AuthenticationPrincipal UserDetails userDetails,
-                                                                     @RequestBody UserUpdateDto userUpdateDto) {
+    public ResponseEntity<Api_Response<UserDto>> updateUserInfo(@AuthenticationPrincipal UserDetails userDetails,
+                                                                @RequestBody UserDto userDto) {
         String githubId = userDetails.getUsername();
-        userService.updateInfo(githubId, userUpdateDto);
+        userService.updateInfo(githubId, userDto);
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.INSERT_SUCCESS.getMessage());
     }
