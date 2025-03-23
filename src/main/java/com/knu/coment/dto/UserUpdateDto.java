@@ -17,7 +17,7 @@ public class UserUpdateDto {
     @Schema(description = "알림 설정", example = "true")
     private boolean notification;
     @NotNull(message = "stackNames cannot be null")
-    @Schema(description = "사용자 스택 배열", example = "[\"FRONTEND\", \"BACKEND\"]")
+    @Schema(description = "사용자 스택 배열", example = "[\"FRONTEND\", \"BACKEND\",\"CLOUD\",\"DB\",\"ALGORITHM\",]")
     private List<String> stackNames;
 
     public UserUpdateDto(String  email, boolean notification, List<String> stackNames) {
