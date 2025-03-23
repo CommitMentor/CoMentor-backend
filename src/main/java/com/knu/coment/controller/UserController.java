@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+@Tag(name = "USER 컨트롤러", description = "USER API입니다.")
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
@@ -46,7 +48,14 @@ public class UserController {
                 SuccessCode.INSERT_SUCCESS.getMessage());
     }
 
+    @Operation(summary = "리프레시 토큰 재발급", description = "Refresh Token 재발급 API 입니다.")
     @PostMapping("/refresh")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Refresh Token 재발급 성공", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "404", description = "재발급 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
+    })
     public ResponseEntity<?> refreshAccessToken(@RequestHeader(name = AUTHORIZATION, required = false) String refreshHeader) {
         if (!StringUtils.hasText(refreshHeader) || !refreshHeader.startsWith(TokenKey.TOKEN_PREFIX)) {
             return ResponseEntity.badRequest().body("Refresh Token이 존재하지 않거나 형식이 올바르지 않습니다.");
