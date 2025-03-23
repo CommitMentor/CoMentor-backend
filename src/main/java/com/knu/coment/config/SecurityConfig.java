@@ -2,6 +2,7 @@ package com.knu.coment.config;
 
 import com.knu.coment.config.auth.CustomOAuth2UserService;
 import com.knu.coment.config.auth.OAuth2SuccessHandler;
+import com.knu.coment.global.Role;
 import com.knu.coment.security.JwtTokenProvider;
 import com.knu.coment.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -32,14 +33,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 new AntPathRequestMatcher("/login/oauth2/github"),
-                                new AntPathRequestMatcher("/health"),
                                 new AntPathRequestMatcher("/login/**"),
+                                new AntPathRequestMatcher("/user/join"),
                                 new AntPathRequestMatcher("/error"),
                                 new AntPathRequestMatcher("/swagger-ui/**"),
-                                new AntPathRequestMatcher("/v3/api-docs/**"),
-                                new AntPathRequestMatcher("/**")
+                                new AntPathRequestMatcher("/v3/api-docs/**")
 
                         ).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/user/**"))
+                        .hasAuthority(Role.USER.getKey())
                         .anyRequest().authenticated()
                 )
 

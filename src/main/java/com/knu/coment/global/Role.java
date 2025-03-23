@@ -1,16 +1,16 @@
 package com.knu.coment.global;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
 public enum Role {
-    GUEST,
-    USER,
-    WITHDRAWN;
+    GUEST("ROLE_GUEST"),
+    USER("ROLE_USER"),
+    WITHDRAWN("ROLE_WITHDRAWN");
 
-    public String getKey() {
-        return name();
+    private final String key;
+
+    private Role(String key) {
+        this.key = key;
     }
 }

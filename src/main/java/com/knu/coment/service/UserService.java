@@ -9,16 +9,18 @@ import com.knu.coment.entity.User;
 import com.knu.coment.global.Role;
 import com.knu.coment.global.Stack;
 import com.knu.coment.repository.UserRepository;
+import com.knu.coment.security.JwtTokenProvider;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public User findByGithubId(String githubId) {
         return userRepository.findByGithubId(githubId)
@@ -31,30 +33,92 @@ public class UserService {
 
     public User saveOrUpdateGithub(OAuthAttributes attributes) {
         User user = userRepository.findByGithubId(attributes.getGithubId())
-                .map(entity -> entity.update(attributes.getEmail(), entity.getNotification(), entity.getUserStacks())) // 기존 데이터가 있다면 업데이트
+                .map(entity -> entity.update(attributes.getEmail(), entity.getNotification(), entity.getUserStacks()))
                 .orElseGet(() -> attributes.toEntity());
         return userRepository.save(user);
     }
 
 
-    public User join(String githubId, UserUpdateDto userUpdateDto){
+    public User join(String githubId, UserUpdateDto dto) {
         User user = findByGithubId(githubId);
-        List<UserStack> userStacks = userUpdateDto.getStackNames().stream()
-                .map(stackName -> new UserStack(user, Stack.valueOf(stackName)))
+
+        if (user.getUserRole() == Role.USER) {
+            throw new UserExceptionHandler(UserErrorCode.ALREADY_JOINED_USER);
+        }
+
+        List<UserStack> stacks = Optional.ofNullable(dto.getStackNames())
+                .orElse(Collections.emptyList())
+                .stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .map(name -> new UserStack(user, Stack.valueOf(name)))
                 .collect(Collectors.toList());
 
-        user.update(userUpdateDto.getEmail(), userUpdateDto.isNotification(), userStacks);
-        user.updateRole(Role.valueOf("USER"));
+        if (stacks.isEmpty()) {
+            throw new UserExceptionHandler(UserErrorCode.INVALID_USER_DATA);
+        }
+
+        user.update(dto.getEmail(), dto.isNotification(), (Set<UserStack>) stacks);
+        user.updateRole(Role.USER);
+
         return userRepository.save(user);
     }
 
-//    public UserUpdateDto getUserInfo(String githubId) {
-//        try {
-//            User user = findByGithubId(githubId);
-//            return UserUpdateDto.fromEntity(user);
-//        } catch (Exception e) {
-//            throw new UserExceptionHandler(UserErrorCode.SELECT_ERROR);
-//        }
-//    }
 
+    public User renewRefreshToken(String githubId) {
+        User user = findByGithubId(githubId);
+        if(user == null || user.getRefreshToken() == null) {
+            throw new UserExceptionHandler(UserErrorCode.MISSING_REQUIRED_FIELD);
+        }
+
+        if (!jwtTokenProvider.validateToken(user.getRefreshToken())) {
+            throw new UserExceptionHandler(UserErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(githubId);
+        user.updateRefreshToken(newRefreshToken);
+        return userRepository.save(user);
+    }
+
+    public UserUpdateDto getUserInfo(String githubId) {
+        User user = findByGithubId(githubId);
+        return UserUpdateDto.fromEntity(user);
+    }
+
+    public User updateInfo(String githubId, UserUpdateDto userUpdateDto) {
+        User user = findByGithubId(githubId);
+
+        Set<Stack> newStackSet = userUpdateDto.getStackNames().stream()
+                .map(String::trim)
+                .filter(stack -> !stack.isEmpty())
+                .map(Stack::valueOf)
+                .collect(Collectors.toSet());
+
+        if (newStackSet.isEmpty()) {
+            throw new IllegalArgumentException("스택 정보는 최소 하나 이상 입력되어야 합니다.");
+        }
+
+        Set<UserStack> existingUserStacks = user.getUserStacks();
+
+        Set<UserStack> stacksToAdd = newStackSet.stream()
+                .map(stack -> new UserStack(user, stack))
+                .filter(stack -> !existingUserStacks.contains(stack))
+                .collect(Collectors.toSet());
+
+        existingUserStacks.removeIf(userStack -> !newStackSet.contains(userStack.getStackName()));
+
+        existingUserStacks.addAll(stacksToAdd);
+
+        return userRepository.save(user);
+    }
+
+
+
+    public User withdrawn(String githubId) {
+        User user = findByGithubId(githubId);
+        user.updateRole(Role.valueOf("WITHDRAWN"));
+        return userRepository.save(user);
+    }
 }
