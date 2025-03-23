@@ -49,7 +49,10 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 
     // ========== Openapi generator ==========
-    implementation 'org.openapitools:openapi-generator:6.5.0'
+    implementation("org.openapitools:openapi-generator:6.5.0") {
+        exclude group: "org.slf4j", module: "slf4j-simple"
+        exclude group: "org.slf4j", module: "slf4j-ext"
+    }
 
 }
 
