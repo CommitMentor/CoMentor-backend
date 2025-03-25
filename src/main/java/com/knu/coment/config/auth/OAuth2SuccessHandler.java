@@ -1,5 +1,6 @@
 package com.knu.coment.config.auth;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knu.coment.entity.User;
 import com.knu.coment.security.JwtTokenProvider;
 import com.knu.coment.service.UserService;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
@@ -39,12 +42,18 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         // Authorization 헤더에 Access Token 추가 (이 부분은 리디렉션이 아닌 API 호출 시에 사용될 것)
         response.setHeader("Authorization", "Bearer " + accessToken);
 
+        Map<String ,String> responseBody = new HashMap<>();
+        responseBody.put("role", String.valueOf(user.getUserRole()));
+        response.setContentType("application/json;charset=UTF-8");
+
+
+        new ObjectMapper().writeValue(response.getWriter(), responseBody);
         // 리디렉션 URL 생성
-        String redirectUrl = UriComponentsBuilder.fromUriString(REDIRECT_URI)
-                .queryParam("accessToken", accessToken)
-                .build().toUriString();
+//        String redirectUrl = UriComponentsBuilder.fromUriString(REDIRECT_URI)
+//                .queryParam("accessToken", accessToken)
+//                .build().toUriString();
 
         // 리디렉션
-        response.sendRedirect(redirectUrl);
+//        response.sendRedirect(redirectUrl);
     }
 }
