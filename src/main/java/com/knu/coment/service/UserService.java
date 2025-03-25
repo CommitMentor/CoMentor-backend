@@ -25,7 +25,7 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
 
     public User findByGithubId(String githubId) {
-        return userRepository.findByGithubId(githubId)
+        return userRepository.findByGithubIdFetchStacks(githubId)
                 .orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
     }
 
@@ -34,7 +34,7 @@ public class UserService {
     }
 
     public User saveOrUpdateGithub(OAuthAttributes attributes) {
-        User user = userRepository.findByGithubId(attributes.getGithubId())
+        User user = userRepository.findByGithubIdFetchStacks(attributes.getGithubId())
                 .map(entity -> entity.updateGithub(attributes.getEmail(), entity.getNotification()))
                 .orElseGet(() -> attributes.toEntity());
         return userRepository.save(user);
