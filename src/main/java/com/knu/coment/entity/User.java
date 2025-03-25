@@ -64,4 +64,10 @@ public class User {
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
+
+    public User update(String email, Boolean notification) {
+        if(email != null) this.email = email;
+        if (notification != null) this.notification = notification;
+        return this;
+    }
 }
