@@ -15,7 +15,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String githubId) throws UsernameNotFoundException {
-        User user = userRepository.findByGithubId(githubId)
+        User user = userRepository.findByGithubIdFetchStacks(githubId)
                 .orElseThrow(() -> new UsernameNotFoundException("No user with githubId: " + githubId));
 
         // User 엔티티를 UserDetails로 변환 (CustomUserDetails 등)
