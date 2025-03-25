@@ -30,7 +30,7 @@ public class User {
     @Column(unique = true)
     private String githubId;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<UserStack> userStacks = new HashSet<>();
 
     private String refreshToken;
