@@ -9,8 +9,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
+
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.userStacks WHERE u.githubId = :githubId")
-    Optional<User> findByGithubId(@Param("githubId") String githubId);
+    Optional<User> findByGithubIdFetchStacks(@Param("githubId") String githubId);
 
 //    @EntityGraph(attributePaths = "userStacks")
 //    Optional<User> findByGithubId(String githubId);
