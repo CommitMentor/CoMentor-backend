@@ -35,7 +35,7 @@ public class UserService {
 
     public User saveOrUpdateGithub(OAuthAttributes attributes) {
         User user = userRepository.findByGithubId(attributes.getGithubId())
-                .map(entity -> entity.update(attributes.getEmail(), entity.getNotification()))
+                .map(entity -> entity.updateGithub(attributes.getEmail(), entity.getNotification()))
                 .orElseGet(() -> attributes.toEntity());
         return userRepository.save(user);
     }

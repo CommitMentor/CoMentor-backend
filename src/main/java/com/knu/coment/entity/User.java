@@ -65,7 +65,7 @@ public class User {
         this.refreshToken = refreshToken;
     }
 
-    public User update(String email, Boolean notification) {
+    public User updateGithub(String email, Boolean notification) {
         if(email != null) this.email = email;
         if (notification != null) this.notification = notification;
         return this;
