@@ -45,51 +45,80 @@ jobs:
     - name: Push Docker Image to Docker Hub
       if: github.event_name == 'push'
       run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}:latest
-      
+
   deploy:
     needs: build
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+
     steps:
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Login to Server
-        uses: appleboy/ssh-action@master
-        with:
-          username: ubuntu
           host: ${{ secrets.LIVE_SERVER_IP }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script_stop: true
-
-      - name: Stop current server
-        uses: appleboy/ssh-action@master
-        with:
           username: ubuntu
-          host: ${{ secrets.LIVE_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            if sudo docker ps -a --format '{{.Names}}' | grep -q "^main-server"; then
+            set -e
+      
+            cd /home/ubuntu/your_project
+      
+            if sudo docker ps -a --format '{{.Names}}' | grep -q '^main-server$'; then
               sudo docker stop main-server
               sudo docker rm main-server
-            else
-              echo "Container main-server does not exist. Skipping stop and remove."
             fi
-
-      - name: Pull and Deploy Docker Image
-        uses: appleboy/ssh-action@master
-        with:
-          username: ubuntu
-          host: ${{ secrets.LIVE_SERVER_IP }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script_stop: true
-          script: |
+      
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}:latest
-            echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" > .env
-            sudo docker-compose --env-file .env -f docker-compose.yml up -d
+      
+            sudo docker-compose -f docker-compose.yml up -d
+      
+            dangling=$(sudo docker images -f "dangling=true" -q)
+            [ -n "$dangling" ] && sudo docker rmi $dangling
+
+  # deploy:
+  #   needs: build
+  #   if: github.event_name == 'push'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Login to DockerHub
+  #       uses: docker/login-action@v1
+  #       with:
+  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
+  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  #     - name: Login to Server
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         username: ubuntu
+  #         host: ${{ secrets.LIVE_SERVER_IP }}
+  #         key: ${{ secrets.EC2_SSH_KEY }}
+  #         script_stop: true
+
+  #     - name: Stop current server
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         username: ubuntu
+  #         host: ${{ secrets.LIVE_SERVER_IP }}
+  #         key: ${{ secrets.EC2_SSH_KEY }}
+  #         script: |
+  #           if sudo docker ps -a --format '{{.Names}}' | grep -q "^main-server"; then
+  #             sudo docker stop main-server
+  #             sudo docker rm main-server
+  #           else
+  #             echo "Container main-server does not exist. Skipping stop and remove."
+  #           fi
+
+  #     - name: Pull and Deploy Docker Image
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         username: ubuntu
+  #         host: ${{ secrets.LIVE_SERVER_IP }}
+  #         key: ${{ secrets.EC2_SSH_KEY }}
+  #         script_stop: true
+  #         script: |
+  #           sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}:latest
+  #           echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" > .env
+  #           sudo docker-compose --env-file .env -f docker-compose.yml up -d
 
             
       # - name: Check Deploy Server URL
@@ -99,16 +128,16 @@ jobs:
       #     max-attempts: 5
       #     retry-delay: 10s
       
-      - name: Delete Old Docker Image
-        uses: appleboy/ssh-action@master
-        with:
-          username: ubuntu
-          host: ${{ secrets.LIVE_SERVER_IP }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            dangling_images=$(sudo docker images -f "dangling=true" -q)
-            if [ ! -z "$dangling_images" ]; then
-              sudo docker rmi $dangling_images
-            else
-              echo "No dangling images found"
-            fi
+      # - name: Delete Old Docker Image
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     username: ubuntu
+      #     host: ${{ secrets.LIVE_SERVER_IP }}
+      #     key: ${{ secrets.EC2_SSH_KEY }}
+      #     script: |
+      #       dangling_images=$(sudo docker images -f "dangling=true" -q)
+      #       if [ ! -z "$dangling_images" ]; then
+      #         sudo docker rmi $dangling_images
+      #       else
+      #         echo "No dangling images found"
+      #       fi
