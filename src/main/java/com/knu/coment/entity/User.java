@@ -33,7 +33,11 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<UserStack> userStacks = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Project> projects = new HashSet<>();
+
     private String refreshToken;
+    private String githubAccessToken;
 
     @Builder
     public User(String userName, String email, Boolean notification, Role userRole, String githubId, Set<UserStack> userStacks){
@@ -69,5 +73,8 @@ public class User {
         if(email != null) this.email = email;
         if (notification != null) this.notification = notification;
         return this;
+    }
+    public void updateGithubAccessToken(String githubAccessToken) {
+        this.githubAccessToken = githubAccessToken;
     }
 }
