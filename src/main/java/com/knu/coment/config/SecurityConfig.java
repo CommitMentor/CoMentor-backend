@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -20,7 +21,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService oAuth2UserService;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
-
+    private final OAuth2AuthorizedClientService authorizedClientService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -53,6 +54,6 @@ public class SecurityConfig {
         return http.build();
     }
     private AuthenticationSuccessHandler oAuth2SuccessHandler() {
-        return new OAuth2SuccessHandler(jwtTokenProvider, userService);
+        return new OAuth2SuccessHandler(jwtTokenProvider, userService, authorizedClientService);
     }
 }
