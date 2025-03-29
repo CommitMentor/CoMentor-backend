@@ -1,10 +1,16 @@
 package com.knu.coment.controller;
 
 import com.knu.coment.dto.RepoDto;
+import com.knu.coment.dto.RepoListDto;
 import com.knu.coment.entity.User;
+import com.knu.coment.global.code.Api_Response;
+import com.knu.coment.global.code.SuccessCode;
 import com.knu.coment.service.GithubRepoService;
 import com.knu.coment.service.UserService;
+import com.knu.coment.util.ApiResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,17 +35,35 @@ public class GithubRepoController {
         this.userService = userService;
     }
 
-    @Operation(summary = "깃 레포", description = "회원가입 시 필수 추가 정보를 등록 API 입니다.")
+    @Operation(summary = "깃 레포 목록 조회", description = "유저의 깃허브 레포 목록을 조회합니다.")
     @GetMapping("/repos")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "레포 목록 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "404", description = "레포 목록 조회 실패"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    }
+    )
     public ResponseEntity<?> getUserRepositories(@AuthenticationPrincipal UserDetails userDetails) {
         String githubId = userDetails.getUsername();
         User user = userService.findByGithubId(githubId);
         String githubAccessToken = user.getGithubAccessToken();
 
         List<RepoDto> repos = githubRepoService.getUserRepos(githubAccessToken).block();
-        List<String> repoNames = repos.stream()
-                .map(RepoDto::getName)
+
+        List<RepoListDto> repoList = repos.stream()
+                .map(repo -> {
+                    RepoListDto dto = new RepoListDto();
+                    dto.setId(repo.getId());
+                    dto.setName(repo.getName());
+                    return dto;
+                })
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(repoNames);
+
+        return ApiResponseUtil.createSuccessResponse(
+                SuccessCode.SELECT_SUCCESS.getMessage(),
+                repoList
+        );
     }
+
 }
