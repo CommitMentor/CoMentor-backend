@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 
@@ -24,7 +25,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final JwtTokenProvider tokenProvider;
     private final UserService userService;
     private final OAuth2AuthorizedClientService authorizedClientService;
-    private static final String REDIRECT_URI = "/login/success";
+    private static final String REDIRECT_URI = "http://localhost:3000/auth/token";
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -46,9 +47,13 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         userService.saveUser(user);
 
         CookieUtil.addCookie(response, "accessToken", accessToken, 60 * 60 * 24);
+        CookieUtil.addCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 * 30);
 
-        String redirectUrl = "http://localhost:3000/auth/token?role=" + user.getUserRole();
-
+        String redirectUrl = UriComponentsBuilder.fromUriString(REDIRECT_URI)
+                .queryParam("accessToken", accessToken)
+                .queryParam("refreshToken", refreshToken)
+                .queryParam("role", user.getUserRole())
+                .build().toUriString();
         response.sendRedirect(redirectUrl);
     }
 }
