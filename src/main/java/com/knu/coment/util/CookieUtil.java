@@ -16,7 +16,9 @@ public class CookieUtil {
             Cookie cookie = new Cookie(name, encodedValue);
             cookie.setPath("/");
             cookie.setMaxAge(maxAge);
+            cookie.setSecure(true);
             response.addCookie(cookie);
+            response.addHeader("Set-Cookie", cookie.getName() + "=" + cookie.getValue() + "; SameSite=None");
         } catch (Exception e) {
             throw new RuntimeException("쿠키 설정 오류", e);
         }
