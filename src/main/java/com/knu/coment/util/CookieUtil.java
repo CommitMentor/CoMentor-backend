@@ -3,6 +3,9 @@ package com.knu.coment.util;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -13,11 +16,14 @@ public class CookieUtil {
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
         try {
             String encodedValue = URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
-            Cookie cookie = new Cookie(name, encodedValue);
-            cookie.setPath("/");
-            cookie.setMaxAge(maxAge);
-            cookie.setSecure(false);
-            response.addCookie(cookie);
+            ResponseCookie cookie = ResponseCookie.from(name, encodedValue)
+                    .path("/")
+                    .maxAge(maxAge)
+                    .secure(false)
+                    .sameSite("Lax")
+                    .httpOnly(false)
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         } catch (Exception e) {
             throw new RuntimeException("쿠키 설정 오류", e);
         }
@@ -37,14 +43,14 @@ public class CookieUtil {
         addCookie(response, name, newValue, maxAge);
     }
 
-    // 쿠키 삭제
+    // 쿠키 삭제 (maxAge=0 으로 설정하여 삭제)
     public static void deleteCookie(HttpServletResponse response, String name) {
-        Cookie cookie = new Cookie(name, "");
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        cookie.setSecure(false);
-
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from(name, "")
+                .path("/")
+                .maxAge(0)
+                .secure(false)
+                .sameSite("None")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }
-
