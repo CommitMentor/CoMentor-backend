@@ -47,7 +47,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         CookieUtil.addCookie(response, "accessToken", accessToken, 60 * 60 * 24);
 
-        String redirectUrl = "http://localhost:3000/auth/token";
+        String redirectUrl = "http://localhost:3000/auth/token?role=" + user.getUserRole();
 
         response.sendRedirect(redirectUrl);
     }
