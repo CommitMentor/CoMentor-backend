@@ -40,7 +40,6 @@ public class ProjectService {
         Repo repo = repodto.toEntity();
         project.assignUser(user);
         project.assignRepo(repo);
-        repo.setProject(project);
         return projectRepository.save(project);
     }
 
