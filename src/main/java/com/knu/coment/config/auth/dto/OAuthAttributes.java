@@ -13,13 +13,15 @@ public class OAuthAttributes {
     private String nameAttributeKey;
     private String name;
     private String githubId;
+    private String avatarUrl;
 
     @Builder
-    public OAuthAttributes(Map<String, Object> attributes, String nameAttributeKey, String name, String githubId) {
+    public OAuthAttributes(Map<String, Object> attributes, String nameAttributeKey, String name, String githubId, String avatarUrl) {
         this.attributes = attributes;
         this.nameAttributeKey = nameAttributeKey;
         this.name = name;
         this.githubId = githubId;
+        this.avatarUrl = avatarUrl;
     }
 
     public static OAuthAttributes of(String registrationId, String userNameAttributeName, Map<String, Object> attributes) {
@@ -32,6 +34,7 @@ public class OAuthAttributes {
                 .attributes(attributes)
                 .nameAttributeKey(userNameAttributeName)
                 .githubId(String.valueOf(attributes.get("id")))
+                .avatarUrl((String) attributes.get("avatar_url"))
                 .build();
     }
 
@@ -41,6 +44,7 @@ public class OAuthAttributes {
                 .githubId(githubId)
                 .notification(false)
                 .userRole(Role.GUEST)
+                .avatarUrl(avatarUrl)
                 .build();
     }
 }
