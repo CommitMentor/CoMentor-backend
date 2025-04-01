@@ -9,6 +9,7 @@ import com.knu.coment.entity.Repo;
 import com.knu.coment.entity.User;
 import com.knu.coment.exception.ProjectExceptionHandler;
 import com.knu.coment.exception.code.ProjectErrorCode;
+import com.knu.coment.global.Status;
 import com.knu.coment.repository.ProjectRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -55,9 +56,16 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public List<DashBoardDto> getUserProjects(String githubId) {
+    public List<DashBoardDto> getUserProjects(String githubId, Status status) {
         User user = userService.findByGithubId(githubId);
-        List<Project> projects = projectRepository.findAllByUser(user);
+        List<Project> projects;
+
+        if (status != null) {
+            projects = projectRepository.findAllByUserAndStatus(user, status);
+        } else {
+            projects = projectRepository.findAllByUser(user);
+        }
+
         return projects.stream()
                 .map(project -> {
                     Repo repo = project.getRepo();
@@ -70,6 +78,16 @@ public class ProjectService {
                     );
                 })
                 .toList();
+    }
+    public Project deleteProject(String githubId, Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+        User projectOwner = project.getUser();
+        if (!projectOwner.getGithubId().equals(githubId)) {
+            throw new ProjectExceptionHandler(ProjectErrorCode.UNAUTHORIZED_ACCESS);
+        }
+        projectRepository.delete(project);
+        return projectRepository.save(project);
     }
 
 }
