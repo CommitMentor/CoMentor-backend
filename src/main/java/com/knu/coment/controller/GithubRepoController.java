@@ -4,6 +4,7 @@ import com.knu.coment.dto.project_repo.RepoDto;
 import com.knu.coment.dto.project_repo.RepoListDto;
 import com.knu.coment.entity.User;
 import com.knu.coment.global.code.SuccessCode;
+import com.knu.coment.repository.RepoRepository;
 import com.knu.coment.service.GithubRepoService;
 import com.knu.coment.service.UserService;
 import com.knu.coment.util.ApiResponseUtil;
@@ -18,7 +19,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Tag(name = "GithubRepo 컨트롤러", description = "GithubRepo API입니다.")
@@ -27,10 +30,12 @@ import java.util.stream.Collectors;
 public class GithubRepoController {
 
     private final GithubRepoService githubRepoService;
+    private final RepoRepository repoRepository;
     private final UserService userService;
 
-    public GithubRepoController(GithubRepoService githubRepoService, UserService userService) {
+    public GithubRepoController(GithubRepoService githubRepoService, RepoRepository repoRepository, UserService userService) {
         this.githubRepoService = githubRepoService;
+        this.repoRepository = repoRepository;
         this.userService = userService;
     }
 
@@ -50,7 +55,11 @@ public class GithubRepoController {
 
         List<RepoDto> repos = githubRepoService.getUserRepos(githubAccessToken).block();
 
+        List<Long> dbRepoIds = repoRepository.findAllRepoIds();
+        Set<Long> existingRepoIds = new HashSet<>(dbRepoIds);
+
         List<RepoListDto> repoList = repos.stream()
+                .filter(repo -> !existingRepoIds.contains(repo.getId()))
                 .map(repo -> {
                     RepoListDto dto = new RepoListDto();
                     dto.setId(repo.getId());
