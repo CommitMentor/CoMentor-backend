@@ -90,8 +90,6 @@ public class UserService {
         return userRepository.save(user);
     }
 
-
-
     public User withdrawn(String githubId) {
         User user = findByGithubId(githubId);
         user.updateRole(Role.valueOf("WITHDRAWN"));

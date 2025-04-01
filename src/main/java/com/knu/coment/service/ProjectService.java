@@ -14,7 +14,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -66,11 +68,13 @@ public class ProjectService {
                             (repo != null) ? repo.getName() : null,
                             (repo != null) ? repo.getLanguage() : null,
                             project.getDescription(),
+                            project.getRole(),
                             project.getStatus(),
                             (repo != null) ? repo.getUpdatedAt() : null
                     );
                 })
-                .toList();
+                .sorted(Comparator.comparing(DashBoardDto::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .collect(Collectors.toList());
     }
     public Project deleteProject(String githubId, Long projectId) {
         Project project = projectRepository.findById(projectId)
