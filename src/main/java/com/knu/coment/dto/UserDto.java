@@ -20,15 +20,23 @@ public class UserDto {
     @NotNull(message = "stackNames cannot be null")
     @Schema(description = "사용자 스택 배열", example = "[\"FRONTEND\", \"BACKEND\",\"DB\",\"ALGORITHM\"]")
     private Set<@NotBlank(message = "stack name cannot be blank") String> stackNames;
+    @Schema(description = "사용자 이미지", example = "https://``")
+    private String avatarUrl;
 
-    public UserDto(String  email, boolean notification, Set<String> stackNames) {
+    public UserDto(String  email, boolean notification, Set<String> stackNames, String avatarUrl) {
         this.email = email;
         this.notification = notification;
         this.stackNames = stackNames;
+        this.avatarUrl = avatarUrl;
     }
     public static UserDto fromEntity(User user) {
-        return new UserDto(user.getEmail(), user.getNotification(), user.getUserStacks().stream()
-                .map(userStack -> userStack.getStackName().name())
-                .collect(Collectors.toSet()));
+        return new UserDto(
+                user.getEmail(),
+                user.getNotification(),
+                user.getUserStacks().stream()
+                        .map(userStack -> userStack.getStackName().name())
+                        .collect(Collectors.toSet()),
+                user.getAvatarUrl()
+        );
     }
 }
