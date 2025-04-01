@@ -93,7 +93,7 @@ public class ProjectController {
         @ApiResponse(responseCode = "404", description = "프로젝트 삭제 실패"),
         @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public ResponseEntity<Api_Response<Project>> deleteProject(
+    public ResponseEntity<?> deleteProject(
         @AuthenticationPrincipal UserDetails userDetails,
         @RequestParam Long projectId) {
         String githubId = userDetails.getUsername();

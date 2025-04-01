@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DashBoardDto {
+    @Schema(description = "프로젝트 아이디", example = "1")
+    private Long id;
     @Schema(description = "레포 이름", example = "comentor")
     private String name;
     @Schema(description = "레포 언어", example = "Java")

@@ -22,12 +22,15 @@ public class UserDto {
     private Set<@NotBlank(message = "stack name cannot be blank") String> stackNames;
     @Schema(description = "사용자 이미지", example = "https://``")
     private String avatarUrl;
+    @Schema(description = "사용자 이름", example = "홍길동")
+    private String userName;
 
-    public UserDto(String  email, boolean notification, Set<String> stackNames, String avatarUrl) {
+    public UserDto(String  email, boolean notification, Set<String> stackNames, String avatarUrl, String userName) {
         this.email = email;
         this.notification = notification;
         this.stackNames = stackNames;
         this.avatarUrl = avatarUrl;
+        this.userName = userName;
     }
     public static UserDto fromEntity(User user) {
         return new UserDto(
@@ -36,7 +39,8 @@ public class UserDto {
                 user.getUserStacks().stream()
                         .map(userStack -> userStack.getStackName().name())
                         .collect(Collectors.toSet()),
-                user.getAvatarUrl()
+                user.getAvatarUrl(),
+                user.getUserName()
         );
     }
 }

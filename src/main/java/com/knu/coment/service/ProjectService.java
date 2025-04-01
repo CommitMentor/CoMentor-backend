@@ -65,6 +65,7 @@ public class ProjectService {
                 .map(project -> {
                     Repo repo = project.getRepo();
                     return new DashBoardDto(
+                            (project != null) ? project.getId() : null,
                             (repo != null) ? repo.getName() : null,
                             (repo != null) ? repo.getLanguage() : null,
                             project.getDescription(),
@@ -76,7 +77,7 @@ public class ProjectService {
                 .sorted(Comparator.comparing(DashBoardDto::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
                 .collect(Collectors.toList());
     }
-    public Project deleteProject(String githubId, Long projectId) {
+    public void deleteProject(String githubId, Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
         User projectOwner = project.getUser();
@@ -84,7 +85,6 @@ public class ProjectService {
             throw new ProjectExceptionHandler(ProjectErrorCode.UNAUTHORIZED_ACCESS);
         }
         projectRepository.delete(project);
-        return projectRepository.save(project);
     }
 
 }
