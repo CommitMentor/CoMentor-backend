@@ -1,9 +1,9 @@
 package com.knu.coment.service;
 
-import com.knu.coment.dto.DashBoardDto;
-import com.knu.coment.dto.CreateProjectDto;
-import com.knu.coment.dto.RepoDto;
-import com.knu.coment.dto.UpdateRepoDto;
+import com.knu.coment.dto.project_repo.DashBoardDto;
+import com.knu.coment.dto.project_repo.CreateProjectDto;
+import com.knu.coment.dto.project_repo.RepoDto;
+import com.knu.coment.dto.project_repo.UpdateRepoDto;
 import com.knu.coment.entity.Project;
 import com.knu.coment.entity.Repo;
 import com.knu.coment.entity.User;

@@ -57,7 +57,6 @@ public class UserService {
     }
 
 
-
     public User renewRefreshToken(String githubId) {
         User user = findByGithubId(githubId);
         if(user == null || user.getRefreshToken() == null) {

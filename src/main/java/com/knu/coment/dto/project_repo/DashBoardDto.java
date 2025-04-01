@@ -1,4 +1,4 @@
-package com.knu.coment.dto;
+package com.knu.coment.dto.project_repo;
 
 import com.knu.coment.global.Status;
 import io.swagger.v3.oas.annotations.media.Schema;

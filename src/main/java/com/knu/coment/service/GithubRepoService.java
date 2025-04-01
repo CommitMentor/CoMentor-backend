@@ -1,6 +1,6 @@
 package com.knu.coment.service;
 
-import com.knu.coment.dto.RepoDto;
+import com.knu.coment.dto.project_repo.RepoDto;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;

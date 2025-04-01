@@ -1,9 +1,9 @@
 package com.knu.coment.controller;
 
-import com.knu.coment.dto.CreateProjectDto;
-import com.knu.coment.dto.DashBoardDto;
-import com.knu.coment.dto.ResponseProjectDto;
-import com.knu.coment.dto.UpdateRepoDto;
+import com.knu.coment.dto.project_repo.CreateProjectDto;
+import com.knu.coment.dto.project_repo.DashBoardDto;
+import com.knu.coment.dto.project_repo.ResponseProjectDto;
+import com.knu.coment.dto.project_repo.UpdateRepoDto;
 import com.knu.coment.entity.Project;
 import com.knu.coment.global.code.Api_Response;
 import com.knu.coment.global.code.SuccessCode;

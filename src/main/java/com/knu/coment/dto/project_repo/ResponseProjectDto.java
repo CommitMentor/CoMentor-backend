@@ -1,4 +1,4 @@
-package com.knu.coment.dto;
+package com.knu.coment.dto.project_repo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;

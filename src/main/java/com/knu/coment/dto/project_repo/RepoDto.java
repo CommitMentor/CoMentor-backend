@@ -1,4 +1,4 @@
-package com.knu.coment.dto;
+package com.knu.coment.dto.project_repo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.knu.coment.entity.Repo;

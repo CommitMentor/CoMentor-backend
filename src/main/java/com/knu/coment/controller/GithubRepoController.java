@@ -1,9 +1,8 @@
 package com.knu.coment.controller;
 
-import com.knu.coment.dto.RepoDto;
-import com.knu.coment.dto.RepoListDto;
+import com.knu.coment.dto.project_repo.RepoDto;
+import com.knu.coment.dto.project_repo.RepoListDto;
 import com.knu.coment.entity.User;
-import com.knu.coment.global.code.Api_Response;
 import com.knu.coment.global.code.SuccessCode;
 import com.knu.coment.service.GithubRepoService;
 import com.knu.coment.service.UserService;
