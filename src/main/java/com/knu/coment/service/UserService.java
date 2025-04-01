@@ -79,7 +79,6 @@ public class UserService {
 
     public User updateInfo(String githubId, UserDto userDto) {
         User user = findByGithubId(githubId);
-
         Set<Stack> newStackSet = userDto.getStackNames().stream()
                 .map(String::trim)
                 .filter(stack -> !stack.isEmpty())
@@ -89,7 +88,6 @@ public class UserService {
         if (newStackSet.isEmpty()) {
             throw new IllegalArgumentException("스택 정보는 최소 하나 이상 입력되어야 합니다.");
         }
-
         Set<UserStack> existingUserStacks = user.getUserStacks();
 
         Set<UserStack> stacksToAdd = newStackSet.stream()
@@ -100,6 +98,8 @@ public class UserService {
         existingUserStacks.removeIf(userStack -> !newStackSet.contains(userStack.getStackName()));
 
         existingUserStacks.addAll(stacksToAdd);
+
+        user.update(userDto.getEmail(), userDto.isNotification(), existingUserStacks);
 
         return userRepository.save(user);
     }
