@@ -55,11 +55,10 @@ public class GithubRepoController {
 
         List<RepoDto> repos = githubRepoService.getUserRepos(githubAccessToken).block();
 
-        List<Long> dbRepoIds = repoRepository.findAllRepoIds();
-        Set<Long> existingRepoIds = new HashSet<>(dbRepoIds);
+        List<Long> userRepoIds = repoRepository.findRepoIdsByUserGithubId(githubId);
 
         List<RepoListDto> repoList = repos.stream()
-                .filter(repo -> !existingRepoIds.contains(repo.getId()))
+                .filter(repo -> !userRepoIds.contains(repo.getId()))
                 .map(repo -> {
                     RepoListDto dto = new RepoListDto();
                     dto.setId(repo.getId());
