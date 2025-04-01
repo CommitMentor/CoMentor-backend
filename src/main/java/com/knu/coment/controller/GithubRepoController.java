@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Tag(name = "GithubRepo 컨트롤러", description = "GithubRepo API입니다.")
 @RestController
-@RequestMapping("/api/github")
+@RequestMapping("/github")
 public class GithubRepoController {
 
     private final GithubRepoService githubRepoService;
