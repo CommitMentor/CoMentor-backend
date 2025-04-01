@@ -78,10 +78,9 @@ public class ProjectController {
         @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     public ResponseEntity<Api_Response<List<DashBoardDto>>> getProjects(
-        @AuthenticationPrincipal UserDetails userDetails,
-        @RequestParam(value ="status", required = false) Status status) {
+        @AuthenticationPrincipal UserDetails userDetails) {
         String githubId = userDetails.getUsername();
-        List<DashBoardDto> dashBoardDtos = projectService.getUserProjects(githubId, status);
+        List<DashBoardDto> dashBoardDtos = projectService.getUserProjects(githubId);
         return ApiResponseUtil.createSuccessResponse(
             SuccessCode.SELECT_SUCCESS.getMessage(),
                 dashBoardDtos);

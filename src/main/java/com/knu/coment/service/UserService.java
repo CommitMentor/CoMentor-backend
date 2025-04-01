@@ -35,7 +35,6 @@ public class UserService {
 
     public User saveOrUpdateGithub(OAuthAttributes attributes) {
         User user = userRepository.findByGithubIdFetchStacks(attributes.getGithubId())
-                .map(entity -> entity.updateGithub(attributes.getEmail(), entity.getNotification()))
                 .orElseGet(() -> attributes.toEntity());
         return userRepository.save(user);
     }
@@ -77,29 +76,16 @@ public class UserService {
         return UserDto.fromEntity(user);
     }
 
+    @Transactional
     public User updateInfo(String githubId, UserDto userDto) {
         User user = findByGithubId(githubId);
-        Set<Stack> newStackSet = userDto.getStackNames().stream()
-                .map(String::trim)
-                .filter(stack -> !stack.isEmpty())
-                .map(Stack::valueOf)
+        Set<UserStack> stacks = userDto.getStackNames().stream()
+                .map(name -> new UserStack(user, Stack.valueOf(name)))
                 .collect(Collectors.toSet());
-
-        if (newStackSet.isEmpty()) {
+        if (stacks.isEmpty()) {
             throw new IllegalArgumentException("스택 정보는 최소 하나 이상 입력되어야 합니다.");
         }
-        Set<UserStack> existingUserStacks = user.getUserStacks();
-
-        Set<UserStack> stacksToAdd = newStackSet.stream()
-                .map(stack -> new UserStack(user, stack))
-                .filter(stack -> !existingUserStacks.contains(stack))
-                .collect(Collectors.toSet());
-
-        existingUserStacks.removeIf(userStack -> !newStackSet.contains(userStack.getStackName()));
-
-        existingUserStacks.addAll(stacksToAdd);
-
-        user.update(userDto.getEmail(), userDto.isNotification(), existingUserStacks);
+        user.update(userDto.getEmail(), userDto.isNotification(), stacks);
 
         return userRepository.save(user);
     }
