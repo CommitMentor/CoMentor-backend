@@ -68,6 +68,7 @@ public class ProjectService {
                             (repo != null) ? repo.getName() : null,
                             (repo != null) ? repo.getLanguage() : null,
                             project.getDescription(),
+                            project.getRole(),
                             project.getStatus(),
                             (repo != null) ? repo.getUpdatedAt() : null
                     );

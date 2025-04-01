@@ -16,6 +16,8 @@ public class DashBoardDto {
     private String language;
     @Schema(description = "레포 설명", example = "코멘터 프로젝트")
     private String description;
+    @Schema(description = "레포 역할", example = "백엔드")
+    private String role;
     @Schema(description = "레포 상태", example = "PROGRESS")
     private Status status;
     @Schema(description = "레포 생성일", example = "2021-09-01")
