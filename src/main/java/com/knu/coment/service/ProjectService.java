@@ -10,6 +10,7 @@ import com.knu.coment.entity.User;
 import com.knu.coment.exception.ProjectExceptionHandler;
 import com.knu.coment.exception.code.ProjectErrorCode;
 import com.knu.coment.repository.ProjectRepository;
+import com.knu.coment.repository.RepoRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final GithubRepoService githubRepoService;
     private final UserService userService;
+    private final RepoRepository repoRepository;
 
     @Transactional
     public Project createProject(String githubId, CreateProjectDto dto) {
@@ -37,8 +39,9 @@ public class ProjectService {
                 .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
 
         Project project = dto.toEntity();
-        Repo repo = repodto.toEntity();
         project.assignUser(user);
+        Repo repo = repoRepository.findById(repodto.getId())
+                .orElseGet(() -> repoRepository.save(repodto.toEntity()));
         project.assignRepo(repo);
         return projectRepository.save(project);
     }
@@ -64,7 +67,7 @@ public class ProjectService {
                 .map(project -> {
                     Repo repo = project.getRepo();
                     return new DashBoardDto(
-                            (project != null) ? project.getId() : null,
+                            project.getId(),
                             (repo != null) ? repo.getName() : null,
                             (repo != null) ? repo.getLanguage() : null,
                             project.getDescription(),
