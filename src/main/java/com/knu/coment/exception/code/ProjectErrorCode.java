@@ -24,6 +24,7 @@ public enum ProjectErrorCode implements ErrorCode {
     UPDATE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while updating the project information."),
     INSERT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while inserting the project information."),
     SELECT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while selecting the project information."),
+    DUPLICATE_PROJECT(HttpStatus.BAD_REQUEST, "Project already exists."),
 
     // 409
     PROJECT_ALREADY_EXISTS(HttpStatus.CONFLICT, "Project already exists or conflicts with existing data.");

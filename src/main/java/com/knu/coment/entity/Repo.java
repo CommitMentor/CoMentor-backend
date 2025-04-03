@@ -29,7 +29,7 @@ public class Repo {
     private String updatedAt;
     private String language;
 
-    @OneToMany(mappedBy = "repo")
+    @OneToMany(mappedBy = "repo", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Project> projects = new ArrayList<>();
 
     public Repo(Long id, String name, String htmlUrl, String createdAt, String updatedAt, String language) {

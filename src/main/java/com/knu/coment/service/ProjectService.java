@@ -37,7 +37,10 @@ public class ProjectService {
                 .filter(r -> r.getId().equals(dto.getId()))
                 .findFirst()
                 .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
-
+        boolean projectExists = projectRepository.existsByUserAndRepoId(user, repodto.getId());
+        if (projectExists) {
+            throw new ProjectExceptionHandler(ProjectErrorCode.DUPLICATE_PROJECT);
+        }
         Project project = dto.toEntity();
         project.assignUser(user);
         Repo repo = repoRepository.findById(repodto.getId())
@@ -88,5 +91,4 @@ public class ProjectService {
         }
         projectRepository.delete(project);
     }
-
 }
