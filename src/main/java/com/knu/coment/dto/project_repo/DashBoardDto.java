@@ -24,4 +24,6 @@ public class DashBoardDto {
     private Status status;
     @Schema(description = "레포 생성일", example = "2021-09-01")
     private String updatedAt;
+    @Schema(description = "레포 소유자", example = "코멘토")
+    private String login;
 }

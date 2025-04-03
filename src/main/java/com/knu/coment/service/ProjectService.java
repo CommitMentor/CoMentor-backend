@@ -1,9 +1,6 @@
 package com.knu.coment.service;
 
-import com.knu.coment.dto.project_repo.DashBoardDto;
-import com.knu.coment.dto.project_repo.CreateProjectDto;
-import com.knu.coment.dto.project_repo.RepoDto;
-import com.knu.coment.dto.project_repo.UpdateRepoDto;
+import com.knu.coment.dto.project_repo.*;
 import com.knu.coment.entity.Project;
 import com.knu.coment.entity.Repo;
 import com.knu.coment.entity.User;
@@ -76,7 +73,8 @@ public class ProjectService {
                             project.getDescription(),
                             project.getRole(),
                             project.getStatus(),
-                            (repo != null) ? repo.getUpdatedAt() : null
+                            (repo != null) ? repo.getUpdatedAt() : null,
+                            repo.getOwner().getLogin()
                     );
                 })
                 .sorted(Comparator.comparing(DashBoardDto::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())

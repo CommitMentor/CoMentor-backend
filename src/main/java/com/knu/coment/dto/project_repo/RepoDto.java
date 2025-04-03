@@ -22,8 +22,10 @@ public class RepoDto {
 
     private String language;
 
+    private OwnerDto owner;
+
     public Repo toEntity(){
-        return new Repo(this.id, this.name, this.htmlUrl, this.createdAt, this.updatedAt, this.language);
+        return new Repo(this.id, this.name, this.htmlUrl, this.createdAt, this.updatedAt, this.language, this.owner);
     }
 
 }
