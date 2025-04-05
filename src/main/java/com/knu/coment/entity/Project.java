@@ -26,7 +26,7 @@ public class Project {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "repo_id", nullable = false)
     private Repo repo;
 

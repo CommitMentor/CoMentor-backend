@@ -1,10 +1,11 @@
 package com.knu.coment.controller;
 
-import com.knu.coment.dto.CreateProjectDto;
-import com.knu.coment.dto.DashBoardDto;
-import com.knu.coment.dto.ResponseProjectDto;
-import com.knu.coment.dto.UpdateRepoDto;
+import com.knu.coment.dto.project_repo.CreateProjectDto;
+import com.knu.coment.dto.project_repo.DashBoardDto;
+import com.knu.coment.dto.project_repo.ResponseProjectDto;
+import com.knu.coment.dto.project_repo.UpdateRepoDto;
 import com.knu.coment.entity.Project;
+import com.knu.coment.global.Status;
 import com.knu.coment.global.code.Api_Response;
 import com.knu.coment.global.code.SuccessCode;
 import com.knu.coment.service.ProjectService;
@@ -83,5 +84,21 @@ public class ProjectController {
         return ApiResponseUtil.createSuccessResponse(
             SuccessCode.SELECT_SUCCESS.getMessage(),
                 dashBoardDtos);
+    }
+    @Operation(summary = "프로젝트 삭제", description = "프로젝트를 삭제하는 API입니다.")
+    @DeleteMapping("")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "프로젝트 삭제 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+        @ApiResponse(responseCode = "404", description = "프로젝트 삭제 실패"),
+        @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    public ResponseEntity<?> deleteProject(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @RequestParam Long projectId) {
+        String githubId = userDetails.getUsername();
+        projectService.deleteProject(githubId, projectId);
+        return ApiResponseUtil.createSuccessResponse(
+            SuccessCode.DELETE_SUCCESS.getMessage());
     }
 }

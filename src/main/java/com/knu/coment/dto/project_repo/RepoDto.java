@@ -1,4 +1,4 @@
-package com.knu.coment.dto;
+package com.knu.coment.dto.project_repo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.knu.coment.entity.Repo;
@@ -19,10 +19,13 @@ public class RepoDto {
 
     @JsonProperty("updated_at")
     private String updatedAt;
+
     private String language;
 
+    private OwnerDto owner;
+
     public Repo toEntity(){
-        return new Repo(this.id, this.name, this.htmlUrl, this.createdAt, this.updatedAt, this.language);
+        return new Repo(this.id, this.name, this.htmlUrl, this.createdAt, this.updatedAt, this.language, this.owner);
     }
 
 }

@@ -30,7 +30,7 @@ public class User {
     @Column(unique = true)
     private String githubId;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserStack> userStacks = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -39,18 +39,22 @@ public class User {
     private String refreshToken;
     private String githubAccessToken;
 
+    @Column(name ="avatar_url")
+    private String avatarUrl;
+
     @Builder
-    public User(String userName, String email, Boolean notification, Role userRole, String githubId, Set<UserStack> userStacks){
+    public User(String userName, String email, Boolean notification, Role userRole, String githubId, Set<UserStack> userStacks, String avatarUrl){
         this.userName = userName;
         this.email = email;
         this.notification = notification;
         this.userRole = userRole;
         this.githubId = githubId;
         this.userStacks = userStacks != null ? userStacks : new HashSet<>();
+        this.avatarUrl = avatarUrl;
     }
 
     public User update(String email, Boolean notification, Set<UserStack> stacks) {
-        if(email != null) this.email = email;
+        if (email != null) this.email = email;
         if (notification != null) this.notification = notification;
         this.userStacks.clear();
         this.userStacks.addAll(stacks);
@@ -69,11 +73,6 @@ public class User {
         this.refreshToken = refreshToken;
     }
 
-    public User updateGithub(String email, Boolean notification) {
-        if(email != null) this.email = email;
-        if (notification != null) this.notification = notification;
-        return this;
-    }
     public void updateGithubAccessToken(String githubAccessToken) {
         this.githubAccessToken = githubAccessToken;
     }

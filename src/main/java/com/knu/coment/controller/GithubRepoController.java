@@ -1,10 +1,10 @@
 package com.knu.coment.controller;
 
-import com.knu.coment.dto.RepoDto;
-import com.knu.coment.dto.RepoListDto;
+import com.knu.coment.dto.project_repo.RepoDto;
+import com.knu.coment.dto.project_repo.RepoListDto;
 import com.knu.coment.entity.User;
-import com.knu.coment.global.code.Api_Response;
 import com.knu.coment.global.code.SuccessCode;
+import com.knu.coment.repository.RepoRepository;
 import com.knu.coment.service.GithubRepoService;
 import com.knu.coment.service.UserService;
 import com.knu.coment.util.ApiResponseUtil;
@@ -24,14 +24,16 @@ import java.util.stream.Collectors;
 
 @Tag(name = "GithubRepo 컨트롤러", description = "GithubRepo API입니다.")
 @RestController
-@RequestMapping("/api/github")
+@RequestMapping("/github")
 public class GithubRepoController {
 
     private final GithubRepoService githubRepoService;
+    private final RepoRepository repoRepository;
     private final UserService userService;
 
-    public GithubRepoController(GithubRepoService githubRepoService, UserService userService) {
+    public GithubRepoController(GithubRepoService githubRepoService, RepoRepository repoRepository, UserService userService) {
         this.githubRepoService = githubRepoService;
+        this.repoRepository = repoRepository;
         this.userService = userService;
     }
 
@@ -51,7 +53,10 @@ public class GithubRepoController {
 
         List<RepoDto> repos = githubRepoService.getUserRepos(githubAccessToken).block();
 
+        List<Long> userRepoIds = repoRepository.findRepoIdsByUserGithubId(githubId);
+
         List<RepoListDto> repoList = repos.stream()
+                .filter(repo -> !userRepoIds.contains(repo.getId()))
                 .map(repo -> {
                     RepoListDto dto = new RepoListDto();
                     dto.setId(repo.getId());

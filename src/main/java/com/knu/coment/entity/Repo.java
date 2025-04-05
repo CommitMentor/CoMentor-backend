@@ -1,12 +1,14 @@
 package com.knu.coment.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import com.knu.coment.dto.project_repo.OwnerDto;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -28,15 +30,20 @@ public class Repo {
     private String updatedAt;
     private String language;
 
-    @OneToOne(mappedBy = "repo")
-    private Project project;
+    @Embedded
+    private OwnerDto owner;
 
-    public Repo(Long id, String name, String htmlUrl, String createdAt, String updatedAt, String language) {
+    @OneToMany(mappedBy = "repo", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Project> projects = new ArrayList<>();
+
+    public Repo(Long id, String name, String htmlUrl, String createdAt, String updatedAt, String language, OwnerDto owner) {
         this.id = id;
         this.name = name;
         this.htmlUrl = htmlUrl;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.language = language;
+        this.owner = owner;
     }
+
 }

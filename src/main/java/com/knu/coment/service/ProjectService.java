@@ -1,20 +1,20 @@
 package com.knu.coment.service;
 
-import com.knu.coment.dto.DashBoardDto;
-import com.knu.coment.dto.CreateProjectDto;
-import com.knu.coment.dto.RepoDto;
-import com.knu.coment.dto.UpdateRepoDto;
+import com.knu.coment.dto.project_repo.*;
 import com.knu.coment.entity.Project;
 import com.knu.coment.entity.Repo;
 import com.knu.coment.entity.User;
 import com.knu.coment.exception.ProjectExceptionHandler;
 import com.knu.coment.exception.code.ProjectErrorCode;
 import com.knu.coment.repository.ProjectRepository;
+import com.knu.coment.repository.RepoRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -23,6 +23,7 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final GithubRepoService githubRepoService;
     private final UserService userService;
+    private final RepoRepository repoRepository;
 
     @Transactional
     public Project createProject(String githubId, CreateProjectDto dto) {
@@ -33,12 +34,15 @@ public class ProjectService {
                 .filter(r -> r.getId().equals(dto.getId()))
                 .findFirst()
                 .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
-
+        boolean projectExists = projectRepository.existsByUserAndRepoId(user, repodto.getId());
+        if (projectExists) {
+            throw new ProjectExceptionHandler(ProjectErrorCode.DUPLICATE_PROJECT);
+        }
         Project project = dto.toEntity();
-        Repo repo = repodto.toEntity();
         project.assignUser(user);
+        Repo repo = repoRepository.findById(repodto.getId())
+                .orElseGet(() -> repoRepository.save(repodto.toEntity()));
         project.assignRepo(repo);
-        repo.setProject(project);
         return projectRepository.save(project);
     }
 
@@ -58,18 +62,31 @@ public class ProjectService {
     public List<DashBoardDto> getUserProjects(String githubId) {
         User user = userService.findByGithubId(githubId);
         List<Project> projects = projectRepository.findAllByUser(user);
+
         return projects.stream()
                 .map(project -> {
                     Repo repo = project.getRepo();
                     return new DashBoardDto(
+                            project.getId(),
                             (repo != null) ? repo.getName() : null,
                             (repo != null) ? repo.getLanguage() : null,
                             project.getDescription(),
+                            project.getRole(),
                             project.getStatus(),
-                            (repo != null) ? repo.getUpdatedAt() : null
+                            (repo != null) ? repo.getUpdatedAt() : null,
+                            repo.getOwner().getLogin()
                     );
                 })
-                .toList();
+                .sorted(Comparator.comparing(DashBoardDto::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .collect(Collectors.toList());
     }
-
+    public void deleteProject(String githubId, Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+        User projectOwner = project.getUser();
+        if (!projectOwner.getGithubId().equals(githubId)) {
+            throw new ProjectExceptionHandler(ProjectErrorCode.UNAUTHORIZED_ACCESS);
+        }
+        projectRepository.delete(project);
+    }
 }

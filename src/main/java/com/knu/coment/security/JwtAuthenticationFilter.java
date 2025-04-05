@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } else {
                 // 만료된 경우 Refresh Token 검증 로직 등
                 String githubId = tokenProvider.getGithubIdFromToken(accessToken);
-                Optional<User> optionalUser = userRepository.findByGithubIdFetchStacks(githubId);
+                Optional<User> optionalUser = userRepository.findByGithubId(githubId);
 
                 if (optionalUser.isPresent()) {
                     // user.getRefreshToken()이 유효하다면 -> 재발급
