@@ -3,7 +3,6 @@ package com.knu.coment.controller;
 import com.knu.coment.dto.project_repo.CreateProjectDto;
 import com.knu.coment.dto.project_repo.DashBoardDto;
 import com.knu.coment.dto.project_repo.UpdateRepoDto;
-import com.knu.coment.entity.Project;
 import com.knu.coment.global.Status;
 import com.knu.coment.global.code.Api_Response;
 import com.knu.coment.global.code.SuccessCode;
@@ -98,5 +97,22 @@ public class ProjectController {
         projectService.deleteProject(githubId, projectId);
         return ApiResponseUtil.createSuccessResponse(
             SuccessCode.DELETE_SUCCESS.getMessage());
+    }
+    @Operation(summary = "프로젝트 상세 조회", description = "프로젝트를 상세 조회하는 API입니다.")
+    @GetMapping("/info")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "프로젝트 상세 조회 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+        @ApiResponse(responseCode = "404", description = "프로젝트 상세 조회 실패"),
+        @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    public ResponseEntity<Api_Response<DashBoardDto>> getProjectInfo(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @RequestParam Long projectId) {
+        String githubId = userDetails.getUsername();
+        DashBoardDto dashBoardDto = projectService.getProjectInfo(githubId, projectId);
+        return ApiResponseUtil.createSuccessResponse(
+            SuccessCode.SELECT_SUCCESS.getMessage(),
+                dashBoardDto);
     }
 }

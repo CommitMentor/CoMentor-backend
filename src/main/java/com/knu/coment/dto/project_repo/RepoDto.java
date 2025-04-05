@@ -28,4 +28,14 @@ public class RepoDto {
         return new Repo(this.id, this.name, this.htmlUrl, this.createdAt, this.updatedAt, this.language, this.owner);
     }
 
+    public RepoDto(Long id, String name, String htmlUrl, String createdAt, String updatedAt, String language, OwnerDto owner) {
+        this.id = id;
+        this.name = name;
+        this.htmlUrl = htmlUrl;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.language = language;
+        this.owner = owner;
+    }
+
 }

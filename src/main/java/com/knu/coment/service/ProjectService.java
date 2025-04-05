@@ -18,9 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -72,21 +70,18 @@ public class ProjectService {
         Page<Project> projectsPage = (status != null)
                 ? projectRepository.findByUserAndStatus(user, status, pageable)
                 : projectRepository.findAllByUser(user, pageable);
-
-        Page<DashBoardDto> dashBoardDtosPage = projectsPage.map(project -> {
-            Repo repo = project.getRepo();
-            return new DashBoardDto(
-                    project.getId(),
-                    (repo != null) ? repo.getName() : null,
-                    (repo != null) ? repo.getLanguage() : null,
-                    project.getDescription(),
-                    project.getRole(),
-                    project.getStatus(),
-                    (repo != null) ? repo.getUpdatedAt() : null,
-                    (repo != null && repo.getOwner() != null) ? repo.getOwner().getLogin() : null
-            );
-        });
+        Page<DashBoardDto> dashBoardDtosPage = projectsPage.map(DashBoardDto::fromEntity);
         return new PageResponse<>(dashBoardDtosPage);
+    }
+
+    public DashBoardDto getProjectInfo(String githubId, Long projectId){
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+        User projectOwner = project.getUser();
+        if (!projectOwner.getGithubId().equals(githubId)) {
+            throw new ProjectExceptionHandler(ProjectErrorCode.UNAUTHORIZED_ACCESS);
+        }
+        return DashBoardDto.fromEntity(project);
     }
 
     public void deleteProject(String githubId, Long projectId) {

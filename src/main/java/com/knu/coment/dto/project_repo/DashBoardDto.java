@@ -1,5 +1,7 @@
 package com.knu.coment.dto.project_repo;
 
+import com.knu.coment.entity.Project;
+import com.knu.coment.entity.Repo;
 import com.knu.coment.global.Status;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -26,4 +28,19 @@ public class DashBoardDto {
     private String updatedAt;
     @Schema(description = "레포 소유자", example = "코멘토")
     private String login;
+
+    public static DashBoardDto fromEntity(Project project) {
+        Repo repo = project.getRepo();
+        return new DashBoardDto(
+                project.getId(),
+                (repo != null) ? repo.getName() : null,
+                (repo != null) ? repo.getLanguage() : null,
+                project.getDescription(),
+                project.getRole(),
+                project.getStatus(),
+                (repo != null) ? repo.getUpdatedAt() : null,
+                (repo != null && repo.getOwner() != null) ? repo.getOwner().getLogin() : null
+        );
+    }
 }
+
