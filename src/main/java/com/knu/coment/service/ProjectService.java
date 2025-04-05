@@ -6,9 +6,15 @@ import com.knu.coment.entity.Repo;
 import com.knu.coment.entity.User;
 import com.knu.coment.exception.ProjectExceptionHandler;
 import com.knu.coment.exception.code.ProjectErrorCode;
+import com.knu.coment.global.Status;
 import com.knu.coment.repository.ProjectRepository;
 import com.knu.coment.repository.RepoRepository;
+import com.knu.coment.util.PageResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,27 +65,30 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public List<DashBoardDto> getUserProjects(String githubId) {
+    public PageResponse<DashBoardDto> getUserProjects(String githubId, Status status, int page) {
         User user = userService.findByGithubId(githubId);
-        List<Project> projects = projectRepository.findAllByUser(user);
+        Pageable pageable = PageRequest.of(page, 8, Sort.by("repo.updatedAt").descending());
 
-        return projects.stream()
-                .map(project -> {
-                    Repo repo = project.getRepo();
-                    return new DashBoardDto(
-                            project.getId(),
-                            (repo != null) ? repo.getName() : null,
-                            (repo != null) ? repo.getLanguage() : null,
-                            project.getDescription(),
-                            project.getRole(),
-                            project.getStatus(),
-                            (repo != null) ? repo.getUpdatedAt() : null,
-                            repo.getOwner().getLogin()
-                    );
-                })
-                .sorted(Comparator.comparing(DashBoardDto::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
-                .collect(Collectors.toList());
+        Page<Project> projectsPage = (status != null)
+                ? projectRepository.findByUserAndStatus(user, status, pageable)
+                : projectRepository.findAllByUser(user, pageable);
+
+        Page<DashBoardDto> dashBoardDtosPage = projectsPage.map(project -> {
+            Repo repo = project.getRepo();
+            return new DashBoardDto(
+                    project.getId(),
+                    (repo != null) ? repo.getName() : null,
+                    (repo != null) ? repo.getLanguage() : null,
+                    project.getDescription(),
+                    project.getRole(),
+                    project.getStatus(),
+                    (repo != null) ? repo.getUpdatedAt() : null,
+                    (repo != null && repo.getOwner() != null) ? repo.getOwner().getLogin() : null
+            );
+        });
+        return new PageResponse<>(dashBoardDtosPage);
     }
+
     public void deleteProject(String githubId, Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
