@@ -3,7 +3,9 @@ package com.knu.coment.service;
 import com.knu.coment.config.auth.dto.OAuthAttributes;
 import com.knu.coment.dto.UserDto;
 import com.knu.coment.entity.UserStack;
+import com.knu.coment.exception.ProjectExceptionHandler;
 import com.knu.coment.exception.UserExceptionHandler;
+import com.knu.coment.exception.code.ProjectErrorCode;
 import com.knu.coment.exception.code.UserErrorCode;
 import com.knu.coment.entity.User;
 import com.knu.coment.global.Role;
@@ -25,7 +27,7 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
 
     public User findByGithubId(String githubId) {
-        return userRepository.findByGithubIdFetchStacks(githubId)
+        return userRepository.findByGithubId(githubId)
                 .orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
     }
 
@@ -34,7 +36,7 @@ public class UserService {
     }
 
     public User saveOrUpdateGithub(OAuthAttributes attributes) {
-        User user = userRepository.findByGithubIdFetchStacks(attributes.getGithubId())
+        User user = userRepository.findByGithubId(attributes.getGithubId())
                 .orElseGet(() -> attributes.toEntity());
         return userRepository.save(user);
     }
@@ -83,7 +85,7 @@ public class UserService {
                 .map(name -> new UserStack(user, Stack.valueOf(name)))
                 .collect(Collectors.toSet());
         if (stacks.isEmpty()) {
-            throw new IllegalArgumentException("스택 정보는 최소 하나 이상 입력되어야 합니다.");
+            throw new ProjectExceptionHandler(ProjectErrorCode.INVALID_RROJECT_STACK);
         }
         user.update(userDto.getEmail(), userDto.isNotification(), stacks);
 

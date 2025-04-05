@@ -46,8 +46,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         user.updateGithubAccessToken(githubAccessToken);
         userService.saveUser(user);
 
-        // CookieUtil.addCookie(response, "accessToken", accessToken, 60 * 60 * 24);
-        // CookieUtil.addCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 * 30);
+//        CookieUtil.addCookie(response, "accessToken", accessToken, 60 * 60 * 24);
+//        CookieUtil.addCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 * 30);
 
         String redirectUrl = UriComponentsBuilder.fromUriString(REDIRECT_URI)
                 .queryParam("accessToken", accessToken)

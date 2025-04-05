@@ -30,7 +30,7 @@ public class User {
     @Column(unique = true)
     private String githubId;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserStack> userStacks = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -54,7 +54,7 @@ public class User {
     }
 
     public User update(String email, Boolean notification, Set<UserStack> stacks) {
-        if(email != null) this.email = email;
+        if (email != null) this.email = email;
         if (notification != null) this.notification = notification;
         this.userStacks.clear();
         this.userStacks.addAll(stacks);
