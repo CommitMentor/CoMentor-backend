@@ -29,6 +29,10 @@ public class ProjectService {
     private final UserService userService;
     private final RepoRepository repoRepository;
 
+    public Project findById(Long projectId) {
+        return projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+    }
     @Transactional
     public Project createProject(String githubId, CreateProjectDto dto) {
         User user = userService.findByGithubId(githubId);
@@ -52,8 +56,7 @@ public class ProjectService {
 
     @Transactional
     public Project updateProject(String githubId, Long projectId, UpdateRepoDto dto) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+        Project project = findById(projectId);
         User projectOwner = project.getUser();
         if (!projectOwner.getGithubId().equals(githubId)) {
             throw new ProjectExceptionHandler(ProjectErrorCode.UNAUTHORIZED_ACCESS);
@@ -75,8 +78,7 @@ public class ProjectService {
     }
 
     public DashBoardDto getProjectInfo(String githubId, Long projectId){
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+        Project project = findById(projectId);
         User projectOwner = project.getUser();
         if (!projectOwner.getGithubId().equals(githubId)) {
             throw new ProjectExceptionHandler(ProjectErrorCode.UNAUTHORIZED_ACCESS);
@@ -85,8 +87,7 @@ public class ProjectService {
     }
 
     public void deleteProject(String githubId, Long projectId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+        Project project = findById(projectId);
         User projectOwner = project.getUser();
         if (!projectOwner.getGithubId().equals(githubId)) {
             throw new ProjectExceptionHandler(ProjectErrorCode.UNAUTHORIZED_ACCESS);

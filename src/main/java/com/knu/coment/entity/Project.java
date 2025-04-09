@@ -9,6 +9,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -29,6 +32,9 @@ public class Project {
     @ManyToOne
     @JoinColumn(name = "repo_id", nullable = false)
     private Repo repo;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<CsQuestion> csQuestions = new HashSet<>();
 
     public Project(String description, String role, Status status) {
         this.description = description;

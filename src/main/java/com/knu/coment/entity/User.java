@@ -42,6 +42,9 @@ public class User {
     @Column(name ="avatar_url")
     private String avatarUrl;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<CsQuestion> csQuestions = new HashSet<>();
+
     @Builder
     public User(String userName, String email, Boolean notification, Role userRole, String githubId, Set<UserStack> userStacks, String avatarUrl){
         this.userName = userName;
