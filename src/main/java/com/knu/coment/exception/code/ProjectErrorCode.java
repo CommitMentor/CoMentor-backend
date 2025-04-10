@@ -15,6 +15,7 @@ public enum ProjectErrorCode implements ErrorCode {
     // 400
     INVALID_PROJECT_ID(HttpStatus.BAD_REQUEST, "Invalid project ID provided."),
     INVALID_PROJECT_DATA(HttpStatus.BAD_REQUEST, "Invalid project data provided."),
+    INVALID_RROJECT_STACK(HttpStatus.BAD_REQUEST, "스택 정보는 최소 하나 이상 입력되어야 합니다."),
     MISSING_REQUIRED_FIELD(HttpStatus.BAD_REQUEST, "Required field is missing."),
 
     // 403

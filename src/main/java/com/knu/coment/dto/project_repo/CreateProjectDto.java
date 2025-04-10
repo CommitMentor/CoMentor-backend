@@ -5,6 +5,7 @@ import com.knu.coment.global.Status;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
@@ -21,5 +22,11 @@ public class CreateProjectDto {
 
     public Project toEntity(){
         return new Project(this.description, this.role, this.status);
+    }
+    public CreateProjectDto(Long id, String description, String role, Status status) {
+        this.id = id;
+        this.description = description;
+        this.role = role;
+        this.status = status;
     }
 }
