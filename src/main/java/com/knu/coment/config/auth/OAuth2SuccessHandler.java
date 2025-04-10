@@ -36,7 +36,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         String redirectBaseUrl;
         if ("dev".equals(env)) {
-            redirectBaseUrl = "http://localhost:3000/auth/token";
+            redirectBaseUrl = "http://localhost:3000/token";
         } else {
             redirectBaseUrl = "https://comentor.vercel.app/token";
         }
@@ -61,13 +61,16 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         CookieUtil.addCookie(response, "accessToken", accessToken, 60 * 60 * 24);
         CookieUtil.addCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 * 30);
-        CookieUtil.addCookie(response, "githubAccessToken", githubAccessToken, 60 * 60 * 24 * 30);
+        CookieUtil.addCookie(response, "githubAccessToken", githubAccessToken,  10 * 365 * 24 * 60 * 60);
 
-        String redirectUrl = UriComponentsBuilder.fromUriString(redirectBaseUrl)
-//                .queryParam("accessToken", accessToken)
-//                .queryParam("refreshToken", refreshToken)
-                .queryParam("role", user.getUserRole())
-                .build().toUriString();
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(redirectBaseUrl)
+                .queryParam("role", user.getUserRole());
+        if ("dev".equals(env)) {
+            uriBuilder.queryParam("accessToken", accessToken)
+                    .queryParam("refreshToken", refreshToken);
+        }
+        String redirectUrl = uriBuilder.build().toUriString();
+
         response.sendRedirect(redirectUrl);
     }
 }
