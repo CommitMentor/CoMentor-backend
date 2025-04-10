@@ -72,7 +72,7 @@ public class GptService {
 
     public String createPromptForAnswerProject(String userCode, String csQuestion, String answer) {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("다음 코드와 질문에 대해 사용자가 답변한 내용입니다. 이 내용에 대해서 피드백이나 답변이 없을 시 알맞은 해답을 제공하세요\n");
+        prompt.append("다음 코드와 질문에 대해 사용자가 답변한 내용입니다. 이 내용에 대해서 피드백이나 답변이 없을 시 알맞은 한국어 해답을 제공하세요\n");
         prompt.append("This is the code: ").append(userCode).append("\n");
         prompt.append("This is the question").append(csQuestion).append("\n");
         prompt.append("this is the answer: ").append(answer).append("\n");

@@ -69,6 +69,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 new AntPathRequestMatcher("/login/oauth2/github"),
                                 new AntPathRequestMatcher("/login/**"),
+                                new AntPathRequestMatcher("/auth/**"),
                                 new AntPathRequestMatcher("/user/join"),
                                 new AntPathRequestMatcher("/error"),
                                 new AntPathRequestMatcher("/swagger-ui/**"),

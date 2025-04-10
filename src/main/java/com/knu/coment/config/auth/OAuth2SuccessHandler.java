@@ -7,6 +7,7 @@ import com.knu.coment.util.CookieUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -25,10 +26,21 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final JwtTokenProvider tokenProvider;
     private final UserService userService;
     private final OAuth2AuthorizedClientService authorizedClientService;
-    private static final String REDIRECT_URI = "http://localhost:3000/auth/token";
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+
+        HttpSession session = request.getSession(false);
+
+        String env = (session != null) ? (String) session.getAttribute("env") : null;
+
+        String redirectBaseUrl;
+        if ("dev".equals(env)) {
+            redirectBaseUrl = "http://localhost:3000/auth/token";
+        } else {
+            redirectBaseUrl = "https://comentor.vercel.app/token";
+        }
+
         String githubId = authentication.getName();
 
         String accessToken = tokenProvider.createAccessToken(githubId, authentication.getAuthorities().toString());
@@ -46,12 +58,14 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         user.updateGithubAccessToken(githubAccessToken);
         userService.saveUser(user);
 
-//        CookieUtil.addCookie(response, "accessToken", accessToken, 60 * 60 * 24);
-//        CookieUtil.addCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 * 30);
 
-        String redirectUrl = UriComponentsBuilder.fromUriString(REDIRECT_URI)
-                .queryParam("accessToken", accessToken)
-                .queryParam("refreshToken", refreshToken)
+        CookieUtil.addCookie(response, "accessToken", accessToken, 60 * 60 * 24);
+        CookieUtil.addCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 * 30);
+        CookieUtil.addCookie(response, "githubAccessToken", githubAccessToken, 60 * 60 * 24 * 30);
+
+        String redirectUrl = UriComponentsBuilder.fromUriString(redirectBaseUrl)
+//                .queryParam("accessToken", accessToken)
+//                .queryParam("refreshToken", refreshToken)
                 .queryParam("role", user.getUserRole())
                 .build().toUriString();
         response.sendRedirect(redirectUrl);
