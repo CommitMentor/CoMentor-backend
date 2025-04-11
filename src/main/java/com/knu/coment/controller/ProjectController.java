@@ -2,9 +2,7 @@ package com.knu.coment.controller;
 
 import com.knu.coment.dto.project_repo.CreateProjectDto;
 import com.knu.coment.dto.project_repo.DashBoardDto;
-import com.knu.coment.dto.project_repo.ResponseProjectDto;
 import com.knu.coment.dto.project_repo.UpdateRepoDto;
-import com.knu.coment.entity.Project;
 import com.knu.coment.global.Status;
 import com.knu.coment.global.code.Api_Response;
 import com.knu.coment.global.code.SuccessCode;
@@ -16,13 +14,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @Tag(name = "PROJECT 컨트롤러", description = "PROJECT API입니다.")
 @RestController
@@ -40,17 +36,14 @@ public class ProjectController {
         @ApiResponse(responseCode = "404", description = "프로젝트 생성 실패"),
         @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public ResponseEntity<Api_Response<ResponseProjectDto>> createProject(
+    public ResponseEntity<?> createProject(
         @AuthenticationPrincipal UserDetails userDetails,
         @RequestBody CreateProjectDto createProjectDto) {
         String githubId = userDetails.getUsername();
-        Project createdProject = projectService.createProject(githubId, createProjectDto);
-        ResponseProjectDto responseDto = new ResponseProjectDto();
-        responseDto.setId(createdProject.getId());
+        projectService.createProject(githubId, createProjectDto);
 
         return ApiResponseUtil.createSuccessResponse(
-                SuccessCode.INSERT_SUCCESS.getMessage(),
-                responseDto);
+                SuccessCode.INSERT_SUCCESS.getMessage());
     }
 
     @Operation(summary = "프로젝트 수정", description = "프로젝트를 수정하는 API입니다.")
@@ -104,5 +97,22 @@ public class ProjectController {
         projectService.deleteProject(githubId, projectId);
         return ApiResponseUtil.createSuccessResponse(
             SuccessCode.DELETE_SUCCESS.getMessage());
+    }
+    @Operation(summary = "프로젝트 상세 조회", description = "프로젝트를 상세 조회하는 API입니다.")
+    @GetMapping("/info")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "프로젝트 상세 조회 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+        @ApiResponse(responseCode = "404", description = "프로젝트 상세 조회 실패"),
+        @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    public ResponseEntity<Api_Response<DashBoardDto>> getProjectInfo(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @RequestParam Long projectId) {
+        String githubId = userDetails.getUsername();
+        DashBoardDto dashBoardDto = projectService.getProjectInfo(githubId, projectId);
+        return ApiResponseUtil.createSuccessResponse(
+            SuccessCode.SELECT_SUCCESS.getMessage(),
+                dashBoardDto);
     }
 }
