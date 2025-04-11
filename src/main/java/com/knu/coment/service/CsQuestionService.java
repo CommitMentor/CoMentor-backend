@@ -2,6 +2,9 @@ package com.knu.coment.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.knu.coment.dto.gpt.CsQuestionAnswerResponse;
+import com.knu.coment.dto.gpt.ProjectCsQuestionInfoResponse;
+import com.knu.coment.entity.Answer;
 import com.knu.coment.entity.CsQuestion;
 import com.knu.coment.entity.Project;
 import com.knu.coment.entity.User;
@@ -11,10 +14,12 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,13 +70,33 @@ public class CsQuestionService {
         if(input == null) {
             return null;
         }
-        // 정규표현식으로 코드블럭 제거: ```json 또는 ``` 로 시작해서 ``` 로 끝나는 부분만 추출
         Pattern pattern = Pattern.compile("(?s)```(?:json)?\\s*(.*?)\\s*```");
         Matcher matcher = pattern.matcher(input.trim());
         if (matcher.find()) {
             return matcher.group(1);
         }
-        // 코드 블록이 없으면 원본 반환
         return input;
+    }
+    public ProjectCsQuestionInfoResponse getCsQuestionDetail(String githubId, Long questionId) {
+        userService.findByGithubId(githubId);
+        CsQuestion csQuestion = csQuestionRepository.findById(questionId)
+                .orElseThrow(() -> new RuntimeException("CsQuestion not found"));
+
+        List<CsQuestionAnswerResponse> answerResponses = csQuestion.getAnswer().stream()
+                .sorted(Comparator.comparing(Answer::getAnsweredAt))
+                .map(answer -> new CsQuestionAnswerResponse(
+                        answer.getContent(),
+                        answer.getAnsweredAt(),
+                        answer.getAuthor().name()
+                ))
+                .collect(Collectors.toList());
+
+        return new ProjectCsQuestionInfoResponse(
+                csQuestion.getId(),
+                csQuestion.getUserCode(),
+                csQuestion.getQuestion(),
+                csQuestion.getCreateAt(),
+                answerResponses
+        );
     }
 }

@@ -16,18 +16,30 @@ public class AnswerService {
 
     private final AnswerRepository answerRepository;
     private final CsQuestionRepository csQuestionRepository;
+    private final UserService userService;
+    private final GptService gptService;
 
-    public Answer createAnswer(Long csQuestionId, String content, Author author) {
+    public Answer createAnswer(String githubId, Long csQuestionId, String answer) {
+        userService.findByGithubId(githubId);
         CsQuestion csQuestion = csQuestionRepository.findById(csQuestionId)
                 .orElseThrow(() -> new RuntimeException("CsQuestion not found with id: " + csQuestionId));
-
         Answer newAnswer = new Answer(
-                content,
+                answer,
                 LocalDateTime.now(),
-                author,
+                Author.USER,
                 csQuestion
         );
-        return answerRepository.save(newAnswer);
+        answerRepository.save(newAnswer);
+
+        String prompt = gptService.createPromptForAnswerProject(csQuestion.getUserCode(), csQuestion.getQuestion(), answer);
+        String generatedAnswer = gptService.callGptApi(prompt);
+        Answer newFeedback = new Answer(
+                generatedAnswer,
+                LocalDateTime.now(),
+                Author.AI,
+                csQuestion
+        );
+        return answerRepository.save(newFeedback);
     }
 }
 
