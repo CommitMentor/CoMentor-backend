@@ -67,7 +67,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .queryParam("role", user.getUserRole());
         if ("dev".equals(env)) {
             uriBuilder.queryParam("accessToken", accessToken)
-                    .queryParam("refreshToken", refreshToken);
+                    .queryParam("refreshToken", refreshToken)
+                    .queryParam("githubAccessToken", githubAccessToken);
         }
         String redirectUrl = uriBuilder.build().toUriString();
 
