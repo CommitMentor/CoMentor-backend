@@ -4,15 +4,10 @@ import com.knu.coment.global.QuestionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 @Data
 @AllArgsConstructor
-public class ProjectCsQuestionInfoResponse {
+public class ProjectQuestionListDto {
     private Long questionId;
-    private String userCode;
     private String question;
     private QuestionStatus questionStatus;
-    private LocalDateTime createAt;
-    private List<CsQuestionAnswerResponse> answers;}
+}

@@ -77,6 +77,10 @@ public class GptService {
         prompt.append("This is the code: ").append(userCode).append("\n");
         prompt.append("This is the question").append(csQuestion).append("\n");
         prompt.append("this is the answer: ").append(answer).append("\n");
+        prompt.append("출력 예시:\n");
+        prompt.append("[\n");
+        prompt.append("  { \"feedback\": \"올바른 대답과 피드백\"},\n");
+        prompt.append("]\n");
         return prompt.toString();
     }
 }
