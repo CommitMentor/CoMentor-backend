@@ -9,5 +9,6 @@ import lombok.Data;
 public class ProjectQuestionListDto {
     private Long questionId;
     private String question;
+    private String fileName;
     private QuestionStatus questionStatus;
 }

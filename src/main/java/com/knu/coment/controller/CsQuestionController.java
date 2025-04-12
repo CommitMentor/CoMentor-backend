@@ -43,7 +43,8 @@ public class CsQuestionController {
         List<CsQuestion> questions = csQuestionService.createProjectQuestions(
                 githubId,
                 dto.getProjectId(),
-                processedUserCode
+                processedUserCode,
+                dto.getFileName()
         );
         List<ProjectCsQuestionResponse> responseList = questions.stream()
                 .map(q -> new ProjectCsQuestionResponse(q.getId(), q.getQuestion()))

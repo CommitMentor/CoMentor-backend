@@ -12,4 +12,6 @@ public class CreateProjectCsQuestionDto {
     @Schema(description = "사용자 코드", example = "public User withdrawn(String githubId){User user = findByGithubId(githubId)" +
             "user.updateRole(Role.valueOf(\"WITHDRAWN\"));return userRepository.save(user);}")
     private String userCode;
+    @Schema(description = "코드 파일 이름", example = "Main.java")
+    private String fileName;
 }

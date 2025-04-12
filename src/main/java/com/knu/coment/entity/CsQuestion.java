@@ -33,6 +33,8 @@ public class CsQuestion {
     @Enumerated(EnumType.STRING)
     private QuestionStatus questionStatus;
 
+    private String fileName;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -44,11 +46,12 @@ public class CsQuestion {
     @OneToMany(mappedBy = "csQuestion", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Answer> answer = new HashSet<>();
 
-    public CsQuestion(String userCode, String question, LocalDateTime createAt, QuestionStatus questionStatus, User user, Project project) {
+    public CsQuestion(String userCode, String question, LocalDateTime createAt, QuestionStatus questionStatus, String fileName ,User user, Project project) {
         this.userCode = userCode;
         this.question = question;
         this.createAt = createAt;
         this.questionStatus = questionStatus;
+        this.fileName = fileName;
         this.user = user;
         this.project = project;
     }

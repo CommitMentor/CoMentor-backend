@@ -15,4 +15,5 @@ public class ProjectCsQuestionInfoResponse {
     private String question;
     private QuestionStatus questionStatus;
     private LocalDateTime createAt;
+    private String fileName;
     private List<CsQuestionAnswerResponse> answers;}

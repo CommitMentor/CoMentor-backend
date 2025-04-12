@@ -34,7 +34,7 @@ public class CsQuestionService {
     private final GptService gptService;
     private final CsQuestionRepository csQuestionRepository;
 
-    public List<CsQuestion> createProjectQuestions(String githubId, Long projectId, String userCode) {
+    public List<CsQuestion> createProjectQuestions(String githubId, Long projectId, String userCode, String userCodeFileName) {
         User user = userService.findByGithubId(githubId);
         Project project = projectService.findById(projectId);
 
@@ -61,6 +61,7 @@ public class CsQuestionService {
                             questionText.trim(),
                             LocalDateTime.now(),
                             QuestionStatus.TODO,
+                            userCodeFileName,
                             user,
                             project
                     );
@@ -103,6 +104,7 @@ public class CsQuestionService {
                 csQuestion.getQuestion(),
                 csQuestion.getQuestionStatus(),
                 csQuestion.getCreateAt(),
+                csQuestion.getFileName(),
                 answerResponses
         );
     }
@@ -118,7 +120,7 @@ public class CsQuestionService {
                         entry.getKey(),
                         entry.getValue().stream()
                                 .sorted(Comparator.comparing(CsQuestion::getId).reversed())
-                                .map(q -> new ProjectQuestionListDto(q.getId(), q.getQuestion(), q.getQuestionStatus()))
+                                .map(q -> new ProjectQuestionListDto(q.getId(), q.getQuestion(),q.getFileName(), q.getQuestionStatus()))
                                 .collect(Collectors.toList())
                 ))
                 .sorted(Comparator.comparing(CsQuestionGroupDto::getCreatedAt).reversed())
