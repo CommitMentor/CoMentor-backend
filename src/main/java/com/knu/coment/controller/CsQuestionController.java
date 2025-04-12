@@ -1,8 +1,6 @@
 package com.knu.coment.controller;
 
-import com.knu.coment.dto.gpt.CreateProjectCsQuestionDto;
-import com.knu.coment.dto.gpt.ProjectCsQuestionInfoResponse;
-import com.knu.coment.dto.gpt.ProjectCsQuestionResponse;
+import com.knu.coment.dto.gpt.*;
 import com.knu.coment.entity.CsQuestion;
 import com.knu.coment.global.code.SuccessCode;
 import com.knu.coment.service.CsQuestionService;
@@ -54,6 +52,25 @@ public class CsQuestionController {
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.INSERT_SUCCESS.getMessage(),
                 responseList
+        );
+    }
+
+    @Operation(summary = "프로젝트 CS 질문 목록 조회", description = "프로젝트 CS 질문 목록을 조회합니다.")
+    @GetMapping("/project/list")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "CS 질문 목록 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "404", description = "CS 질문 목록 조회 실패"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    public ResponseEntity<?> getProjectCsQuestionList(@AuthenticationPrincipal UserDetails userDetails,
+                                                      @RequestParam Long projectId) {
+        String githubId = userDetails.getUsername();
+        List<CsQuestionGroupDto> csQuestionsList = csQuestionService.getGroupedCsQuestions(githubId, projectId);
+
+        return ApiResponseUtil.createSuccessResponse(
+                SuccessCode.SELECT_SUCCESS.getMessage(),
+                csQuestionsList
         );
     }
 

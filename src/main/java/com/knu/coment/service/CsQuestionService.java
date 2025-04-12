@@ -3,11 +3,16 @@ package com.knu.coment.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knu.coment.dto.gpt.CsQuestionAnswerResponse;
+import com.knu.coment.dto.gpt.CsQuestionGroupDto;
 import com.knu.coment.dto.gpt.ProjectCsQuestionInfoResponse;
+import com.knu.coment.dto.gpt.ProjectQuestionListDto;
 import com.knu.coment.entity.Answer;
 import com.knu.coment.entity.CsQuestion;
 import com.knu.coment.entity.Project;
 import com.knu.coment.entity.User;
+import com.knu.coment.exception.QuestionExceptionHandler;
+import com.knu.coment.exception.code.QuestionErrorCode;
+import com.knu.coment.global.QuestionStatus;
 import com.knu.coment.repository.CsQuestionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -55,6 +60,7 @@ public class CsQuestionService {
                             userCode,
                             questionText.trim(),
                             LocalDateTime.now(),
+                            QuestionStatus.TODO,
                             user,
                             project
                     );
@@ -80,7 +86,7 @@ public class CsQuestionService {
     public ProjectCsQuestionInfoResponse getCsQuestionDetail(String githubId, Long questionId) {
         userService.findByGithubId(githubId);
         CsQuestion csQuestion = csQuestionRepository.findById(questionId)
-                .orElseThrow(() -> new RuntimeException("CsQuestion not found"));
+                .orElseThrow(() -> new QuestionExceptionHandler(QuestionErrorCode.NOT_FOUND_QUESTION));
 
         List<CsQuestionAnswerResponse> answerResponses = csQuestion.getAnswer().stream()
                 .sorted(Comparator.comparing(Answer::getAnsweredAt))
@@ -95,8 +101,28 @@ public class CsQuestionService {
                 csQuestion.getId(),
                 csQuestion.getUserCode(),
                 csQuestion.getQuestion(),
+                csQuestion.getQuestionStatus(),
                 csQuestion.getCreateAt(),
                 answerResponses
         );
     }
+
+    public List<CsQuestionGroupDto> getGroupedCsQuestions(String githubId, Long projectId) {
+        userService.findByGithubId(githubId);
+        List<CsQuestion> questions = csQuestionRepository.findAllByCsStackIsNullAndProject_Id(projectId);
+
+        return questions.stream()
+                .collect(Collectors.groupingBy(q -> q.getCreateAt().toLocalDate()))
+                .entrySet().stream()
+                .map(entry -> new CsQuestionGroupDto(
+                        entry.getKey(),
+                        entry.getValue().stream()
+                                .sorted(Comparator.comparing(CsQuestion::getId).reversed())
+                                .map(q -> new ProjectQuestionListDto(q.getId(), q.getQuestion(), q.getQuestionStatus()))
+                                .collect(Collectors.toList())
+                ))
+                .sorted(Comparator.comparing(CsQuestionGroupDto::getCreatedAt).reversed())
+                .collect(Collectors.toList());
+    }
+
 }
