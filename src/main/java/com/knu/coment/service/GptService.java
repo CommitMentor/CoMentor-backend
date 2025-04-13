@@ -79,27 +79,36 @@ public class GptService {
 
     public String createPromptForAnswerProject(String userCode, String csQuestion, String answer) {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("당신은 10년 경력의 시니어 소프트웨어 엔지니어이자 면접관입니다. ");
-        prompt.append("아래에 제시된 코드와 질문, 그리고 사용자의 답변을 참고하여 ");
-        prompt.append("이 질문에 대한 정확한 답변(해설)과, 사용자의 답변에 대한 피드백을 한국어로 작성해주세요.\n\n");
-        prompt.append("코드:\n```").append(userCode).append("```\n\n");
-        prompt.append("질문:\n").append(csQuestion).append("\n\n");
-        prompt.append("사용자 답변:\n").append(answer).append("\n\n");
-        
-        prompt.append("지침:\n");
-        prompt.append("1. 사용자의 답변이 충분하지 않거나 비어있는 경우, 질문에 알맞은 정답을 대신 제시해주세요.\n");
-        prompt.append("2. 사용자의 답변이 어느 정도 맞았더라도, 추가 보완 사항이나 개선점을 피드백 형태로 명시해주세요.\n");
-        prompt.append("3. 먼저 '정확한 답변'을 간략히 서술하고, 이어서 '사용자의 답변'에 대한 피드백을 작성해주세요.\n");
-        prompt.append("4. 최종 출력은 JSON 배열 형태로만 반환해주세요. 예시는 아래와 같습니다.\n");
-        prompt.append("[\n");
-        prompt.append("  {\n");
-        prompt.append("    \"feedback\": \"여기에 올바른 해설과 함께 사용자의 답변을 평가/보완하는 피드백을 서술\"\n");
-        prompt.append("  }\n");
-        prompt.append("]\n");
-        prompt.append("JSON 외 다른 텍스트는 넣지 마세요.\n");
+
+        prompt.append("당신은 10년 경력의 시니어 소프트웨어 엔지니어이자 면접관입니다.\n")
+                .append("다음에 주어지는 코드와 질문, 그리고 사용자가 작성한 답변을 참고하여, ")
+                .append("정확한 해설과 함께 피드백을 제시해주세요. 만약 사용자의 답변이 비거나 매우 부족하다면, ")
+                .append("예시처럼 상세한 답변을 직접 작성해주시기 바랍니다.\n\n");
+
+        prompt.append("코드:\n```").append(userCode).append("```\n\n")
+                .append("질문:\n").append(csQuestion).append("\n\n")
+                .append("사용자 답변:\n").append(answer).append("\n\n");
+
+        prompt.append("지침:\n")
+                .append("1. 'feedback' 필드에 아래 예시처럼 **자세한 해설** 또는 **피드백**(사용자 답변 평가 및 보완점)을 작성해주세요.\n")
+                .append("   - 사용자의 답변이 어느 정도 맞았으면, 해당 부분을 인정하고 추가 보완점을 제시해주세요.\n")
+                .append("   - 사용자의 답변이 비어있거나 너무 짧으면, 직접 모범 답안을 작성해주세요.\n")
+                .append("2. 최종 출력은 **JSON 배열** 형태로 한 개의 원소만 가지며, 아래 예시처럼 구성해주세요.\n")
+                .append("3. JSON 배열 **이외의 텍스트를 추가하지 마세요**(설명, 마크다운 등 불필요한 출력 금지).\n\n");
+
+        prompt.append("출력 예시 1:\n")
+                .append("[\n")
+                .append("  {\n")
+                .append("    \"feedback\": \"TCP 3-way handshake는 ... (중략)\"\n")
+                .append("  }\n")
+                .append("]\n\n")
+                .append("- 위 예시처럼 'feedback' 키 아래에 상세한 해설을 작성해주세요.\n")
+                .append("- 사용자의 답변 일부가 적절하면 그 점을 칭찬 또는 인용하고, 잘못된 부분이 있으면 올바르게 정정하며 보완하세요.\n")
+                .append("- 가능하다면 '정확한 답변'과 '사용자 답변 평가'가 구분되도록 서술해주세요.\n");
 
         return prompt.toString();
     }
+
 }
 
 
