@@ -16,7 +16,7 @@ public class Answer {
     private Long id;
 
     @Lob
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "LONGTEXT")
     private String content;
 
     private LocalDateTime answeredAt;

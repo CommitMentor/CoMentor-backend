@@ -30,31 +30,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        try {
+            String accessToken = resolveToken(request);
 
-        String accessToken = resolveToken(request);
+            if (StringUtils.hasText(accessToken)) {
+                // AccessToken 유효성 검사
+                if (tokenProvider.validateToken(accessToken)) {
+                    setAuthentication(accessToken);
+                } else {
+                    // 만료된 경우 Refresh Token 검증 로직 등
+                    String githubId = tokenProvider.getGithubIdFromToken(accessToken);
+                    Optional<User> optionalUser = userRepository.findByGithubId(githubId);
 
-        if (StringUtils.hasText(accessToken)) {
-            // AccessToken 유효성 검사
-            if (tokenProvider.validateToken(accessToken)) {
-                setAuthentication(accessToken);
-            } else {
-                // 만료된 경우 Refresh Token 검증 로직 등
-                String githubId = tokenProvider.getGithubIdFromToken(accessToken);
-                Optional<User> optionalUser = userRepository.findByGithubId(githubId);
-
-                if (optionalUser.isPresent()) {
-                    // user.getRefreshToken()이 유효하다면 -> 재발급
-                    String newAccessToken = tokenProvider.reissueAccessToken(accessToken);
-                    if (StringUtils.hasText(newAccessToken)) {
-                        response.setHeader(AUTHORIZATION, TokenKey.TOKEN_PREFIX + newAccessToken);
-                        setAuthentication(newAccessToken);
+                    if (optionalUser.isPresent()) {
+                        // user.getRefreshToken()이 유효하다면 -> 재발급
+                        String newAccessToken = tokenProvider.reissueAccessToken(accessToken);
+                        if (StringUtils.hasText(newAccessToken)) {
+                            response.setHeader(AUTHORIZATION, TokenKey.TOKEN_PREFIX + newAccessToken);
+                            setAuthentication(newAccessToken);
+                        }
                     }
                 }
             }
+        } catch (Exception ex) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("유효하지 않거나 만료된 토큰입니다.");
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            return;
         }
 
         filterChain.doFilter(request, response);
     }
+
 
     private void setAuthentication(String token) {
         Authentication authentication = tokenProvider.getAuthentication(token);

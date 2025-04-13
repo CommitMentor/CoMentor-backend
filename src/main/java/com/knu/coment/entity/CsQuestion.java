@@ -22,9 +22,11 @@ public class CsQuestion {
     @Enumerated(EnumType.STRING)
     private Stack csStack;
 
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String userCode;
     @Lob
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "LONGTEXT")
     private String question;
 
     @CreatedDate
