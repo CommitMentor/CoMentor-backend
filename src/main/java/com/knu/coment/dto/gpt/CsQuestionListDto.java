@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @Getter
-public class CsQuestionGroupDto {
+public class CsQuestionListDto {
     private LocalDate createdAt;
     private List<ProjectQuestionListDto> questions;
 }

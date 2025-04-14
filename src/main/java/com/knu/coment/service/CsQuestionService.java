@@ -2,10 +2,7 @@ package com.knu.coment.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.knu.coment.dto.gpt.CsQuestionAnswerResponse;
-import com.knu.coment.dto.gpt.CsQuestionGroupDto;
-import com.knu.coment.dto.gpt.ProjectCsQuestionInfoResponse;
-import com.knu.coment.dto.gpt.ProjectQuestionListDto;
+import com.knu.coment.dto.gpt.*;
 import com.knu.coment.entity.Answer;
 import com.knu.coment.entity.CsQuestion;
 import com.knu.coment.entity.Project;
@@ -89,11 +86,10 @@ public class CsQuestionService {
         CsQuestion csQuestion = csQuestionRepository.findById(questionId)
                 .orElseThrow(() -> new QuestionExceptionHandler(QuestionErrorCode.NOT_FOUND_QUESTION));
 
-        List<CsQuestionAnswerResponse> answerResponses = csQuestion.getAnswer().stream()
+        List<CreateFeedBackResponseDto> answerResponses = csQuestion.getAnswer().stream()
                 .sorted(Comparator.comparing(Answer::getAnsweredAt))
-                .map(answer -> new CsQuestionAnswerResponse(
+                .map(answer -> new CreateFeedBackResponseDto(
                         answer.getContent(),
-                        answer.getAnsweredAt(),
                         answer.getAuthor().name()
                 ))
                 .collect(Collectors.toList());
@@ -103,28 +99,38 @@ public class CsQuestionService {
                 csQuestion.getUserCode(),
                 csQuestion.getQuestion(),
                 csQuestion.getQuestionStatus(),
-                csQuestion.getCreateAt(),
                 csQuestion.getFileName(),
                 answerResponses
         );
     }
 
-    public List<CsQuestionGroupDto> getGroupedCsQuestions(String githubId, Long projectId) {
+    public List<CsQuestionListDto> getGroupedCsQuestions(String githubId, Long projectId) {
         userService.findByGithubId(githubId);
         List<CsQuestion> questions = csQuestionRepository.findAllByCsStackIsNullAndProject_Id(projectId);
 
         return questions.stream()
                 .collect(Collectors.groupingBy(q -> q.getCreateAt().toLocalDate()))
                 .entrySet().stream()
-                .map(entry -> new CsQuestionGroupDto(
+                .map(entry -> new CsQuestionListDto(
                         entry.getKey(),
                         entry.getValue().stream()
                                 .sorted(Comparator.comparing(CsQuestion::getId).reversed())
                                 .map(q -> new ProjectQuestionListDto(q.getId(), q.getQuestion(),q.getFileName(), q.getQuestionStatus()))
                                 .collect(Collectors.toList())
                 ))
-                .sorted(Comparator.comparing(CsQuestionGroupDto::getCreatedAt).reversed())
+                .sorted(Comparator.comparing(CsQuestionListDto::getCreatedAt).reversed())
                 .collect(Collectors.toList());
     }
 
+    public List<ThirdCsQuestionListDto> getRecentQuestions(String githubId) {
+        userService.findByGithubId(githubId);
+        List<CsQuestion> questions = csQuestionRepository.findTop3ByOrderByCreateAtDesc();
+        return questions.stream()
+                .map(q -> new ThirdCsQuestionListDto(
+                        q.getId(),
+                        q.getQuestion(),
+                        q.getUserCode()
+                ))
+                .collect(Collectors.toList());
+    }
 }

@@ -56,7 +56,7 @@ public class CsQuestionController {
         );
     }
 
-    @Operation(summary = "프로젝트 CS 질문 목록 조회", description = "프로젝트 CS 질문 목록을 조회합니다.")
+    @Operation(summary = "[질문 기록] 프로젝트 CS 질문 기록 목록 조회", description = "프로젝트 CS 질문 기록을 조회합니다.")
     @GetMapping("/project/list")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "CS 질문 목록 조회 성공"),
@@ -67,7 +67,7 @@ public class CsQuestionController {
     public ResponseEntity<?> getProjectCsQuestionList(@AuthenticationPrincipal UserDetails userDetails,
                                                       @RequestParam Long projectId) {
         String githubId = userDetails.getUsername();
-        List<CsQuestionGroupDto> csQuestionsList = csQuestionService.getGroupedCsQuestions(githubId, projectId);
+        List<CsQuestionListDto> csQuestionsList = csQuestionService.getGroupedCsQuestions(githubId, projectId);
 
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
@@ -75,7 +75,7 @@ public class CsQuestionController {
         );
     }
 
-    @Operation(summary = "PROJECT CS 질문 기록 상세 조회", description = "PROJECT CS 질문 상세 기록을 조회합니다.")
+    @Operation(summary = "[질문 기록] PROJECT CS 질문 기록 상세 조회", description = "PROJECT CS 질문 상세 기록을 조회합니다.")
     @GetMapping("/project")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "CS 질문 상세 조회 성공"),
@@ -91,6 +91,23 @@ public class CsQuestionController {
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 projectCsQuestionResponse
+        );
+    }
+    @Operation(summary = "[CS 질문] CS 질문 최근 질문 3개 조회", description = "CS 질문 최근 질문 3개를 조회합니다.")
+    @GetMapping("project/recent")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "CS 질문 최근 질문 목록 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "404", description = "CS 질문 최근 질문 목록 조회 실패"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    public ResponseEntity<?> getRecentQuestions(@AuthenticationPrincipal UserDetails userDetails) {
+        String githubId = userDetails.getUsername();
+        List<ThirdCsQuestionListDto> recentQuestions = csQuestionService.getRecentQuestions(githubId);
+
+        return ApiResponseUtil.createSuccessResponse(
+                SuccessCode.SELECT_SUCCESS.getMessage(),
+                recentQuestions
         );
     }
 }

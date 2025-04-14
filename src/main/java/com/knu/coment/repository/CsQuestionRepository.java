@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface CsQuestionRepository extends JpaRepository<CsQuestion, Long> {
     List<CsQuestion> findAllByCsStackIsNullAndProject_Id(Long projectId);
+
+    List<CsQuestion> findTop3ByOrderByCreateAtDesc();
 }
