@@ -15,7 +15,6 @@ public class Folder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
     private String folderName;
 
     @OneToMany(mappedBy = "folder", cascade = CascadeType.PERSIST)
