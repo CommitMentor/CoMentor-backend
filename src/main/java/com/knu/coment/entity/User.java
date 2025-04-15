@@ -83,11 +83,15 @@ public class User {
         this.githubAccessToken = githubAccessToken;
     }
 
+    public void createDefaultFolder() {
+        if (folders.stream().noneMatch(f -> "default".equals(f.getFolderName()))) {
+            Folder defaultFolder = new Folder( "default", this);
+            addFolder(defaultFolder);
+        }
+    }
+
     public void addFolder(Folder folder) {
         this.folders.add(folder);
-    }
-    public void createDefaultFolder(){
-        Folder folder = new Folder(this);
-        addFolder(folder);
+        folder.setUser(this);
     }
 }
