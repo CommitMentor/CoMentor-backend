@@ -31,7 +31,12 @@ public class CsQuestionService {
     private final GptService gptService;
     private final CsQuestionRepository csQuestionRepository;
 
-    public List<CsQuestion> createProjectQuestions(String githubId, Long projectId, String userCode, String userCodeFileName) {
+    public CsQuestion findById(Long questionId) {
+        return csQuestionRepository.findById(questionId)
+                .orElseThrow(() -> new QuestionExceptionHandler(QuestionErrorCode.NOT_FOUND_QUESTION));
+    }
+
+    public List<CsQuestion> createProjectQuestions(String githubId, Long projectId, String userCode, String userCodefolderName) {
         User user = userService.findByGithubId(githubId);
         Project project = projectService.findById(projectId);
 
@@ -58,7 +63,7 @@ public class CsQuestionService {
                             questionText.trim(),
                             LocalDateTime.now(),
                             QuestionStatus.TODO,
-                            userCodeFileName,
+                            userCodefolderName,
                             user,
                             project
                     );
@@ -83,8 +88,7 @@ public class CsQuestionService {
     }
     public ProjectCsQuestionInfoResponse getCsQuestionDetail(String githubId, Long questionId) {
         userService.findByGithubId(githubId);
-        CsQuestion csQuestion = csQuestionRepository.findById(questionId)
-                .orElseThrow(() -> new QuestionExceptionHandler(QuestionErrorCode.NOT_FOUND_QUESTION));
+        CsQuestion csQuestion = findById(questionId);
 
         List<CreateFeedBackResponseDto> answerResponses = csQuestion.getAnswer().stream()
                 .sorted(Comparator.comparing(Answer::getAnsweredAt))
@@ -99,7 +103,7 @@ public class CsQuestionService {
                 csQuestion.getUserCode(),
                 csQuestion.getQuestion(),
                 csQuestion.getQuestionStatus(),
-                csQuestion.getFileName(),
+                csQuestion.getFolderName(),
                 answerResponses
         );
     }
@@ -115,22 +119,10 @@ public class CsQuestionService {
                         entry.getKey(),
                         entry.getValue().stream()
                                 .sorted(Comparator.comparing(CsQuestion::getId).reversed())
-                                .map(q -> new ProjectQuestionListDto(q.getId(), q.getQuestion(),q.getFileName(), q.getQuestionStatus()))
+                                .map(q -> new ProjectQuestionListDto(q.getId(), q.getQuestion(),q.getFolderName(), q.getQuestionStatus()))
                                 .collect(Collectors.toList())
                 ))
                 .sorted(Comparator.comparing(CsQuestionListDto::getCreatedAt).reversed())
-                .collect(Collectors.toList());
-    }
-
-    public List<ThirdCsQuestionListDto> getRecentQuestions(String githubId) {
-        userService.findByGithubId(githubId);
-        List<CsQuestion> questions = csQuestionRepository.findTop3ByOrderByCreateAtDesc();
-        return questions.stream()
-                .map(q -> new ThirdCsQuestionListDto(
-                        q.getId(),
-                        q.getQuestion(),
-                        q.getUserCode()
-                ))
                 .collect(Collectors.toList());
     }
 }

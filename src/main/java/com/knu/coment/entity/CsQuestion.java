@@ -35,7 +35,7 @@ public class CsQuestion {
     @Enumerated(EnumType.STRING)
     private QuestionStatus questionStatus;
 
-    private String fileName;
+    private String folderName;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -48,17 +48,32 @@ public class CsQuestion {
     @OneToMany(mappedBy = "csQuestion", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Answer> answer = new HashSet<>();
 
-    public CsQuestion(String userCode, String question, LocalDateTime createAt, QuestionStatus questionStatus, String fileName ,User user, Project project) {
+    @ManyToOne
+    @JoinColumn(name = "folder_id", nullable = true)
+    private Folder folder;
+
+    public CsQuestion(String userCode, String question, LocalDateTime createAt, QuestionStatus questionStatus, String folderName ,User user, Project project) {
         this.userCode = userCode;
         this.question = question;
         this.createAt = createAt;
         this.questionStatus = questionStatus;
-        this.fileName = fileName;
+        this.folderName = folderName;
         this.user = user;
         this.project = project;
     }
 
     public void markAsDone() {
         this.questionStatus = QuestionStatus.DONE;
+    }
+
+    public void assignFolder(Folder folder) {
+        this.folder = folder;
+    }
+
+    public void removeFolder() {
+        if (this.folder != null) {
+            this.folder.getQuestions().remove(this);
+            this.folder = null;
+        }
     }
 }

@@ -13,5 +13,5 @@ public class CreateProjectCsQuestionDto {
             "user.updateRole(Role.valueOf(\"WITHDRAWN\"));return userRepository.save(user);}")
     private String userCode;
     @Schema(description = "코드 파일 이름", example = "Main.java")
-    private String fileName;
+    private String folderName;
 }
