@@ -44,7 +44,7 @@ public class CsQuestionController {
                 githubId,
                 dto.getProjectId(),
                 processedUserCode,
-                dto.getFileName()
+                dto.getFolderName()
         );
         List<ProjectCsQuestionResponse> responseList = questions.stream()
                 .map(q -> new ProjectCsQuestionResponse(q.getId(), q.getQuestion()))
@@ -91,23 +91,6 @@ public class CsQuestionController {
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 projectCsQuestionResponse
-        );
-    }
-    @Operation(summary = "[CS 질문] CS 질문 최근 질문 3개 조회", description = "CS 질문 최근 질문 3개를 조회합니다.")
-    @GetMapping("project/recent")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "CS 질문 최근 질문 목록 조회 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-            @ApiResponse(responseCode = "404", description = "CS 질문 최근 질문 목록 조회 실패"),
-            @ApiResponse(responseCode = "500", description = "서버 오류")
-    })
-    public ResponseEntity<?> getRecentQuestions(@AuthenticationPrincipal UserDetails userDetails) {
-        String githubId = userDetails.getUsername();
-        List<ThirdCsQuestionListDto> recentQuestions = csQuestionService.getRecentQuestions(githubId);
-
-        return ApiResponseUtil.createSuccessResponse(
-                SuccessCode.SELECT_SUCCESS.getMessage(),
-                recentQuestions
         );
     }
 }

@@ -45,6 +45,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CsQuestion> csQuestions = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Folder> folders = new HashSet<>();
+
     @Builder
     public User(String userName, String email, Boolean notification, Role userRole, String githubId, Set<UserStack> userStacks, String avatarUrl){
         this.userName = userName;
@@ -78,5 +81,13 @@ public class User {
 
     public void updateGithubAccessToken(String githubAccessToken) {
         this.githubAccessToken = githubAccessToken;
+    }
+
+    public void addFolder(Folder folder) {
+        this.folders.add(folder);
+    }
+    public void createDefaultFolder(){
+        Folder folder = new Folder(this);
+        addFolder(folder);
     }
 }

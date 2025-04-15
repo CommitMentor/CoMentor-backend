@@ -1,17 +1,14 @@
-package com.knu.coment.dto.gpt;
+package com.knu.coment.dto;
 
 import com.knu.coment.global.QuestionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
-public class ProjectCsQuestionInfoResponse {
+public class FolderCsQuestionListDto {
+    private String folderName;
     private Long questionId;
-    private String userCode;
     private String question;
     private QuestionStatus questionStatus;
-    private String folderName;
-    private List<CreateFeedBackResponseDto> answers;}
+}

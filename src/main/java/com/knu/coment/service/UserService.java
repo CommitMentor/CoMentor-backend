@@ -53,7 +53,7 @@ public class UserService {
 
         user.update(dto.getEmail(), dto.isNotification(), stacks);
         user.updateRole(Role.USER);
-
+        user.createDefaultFolder();
         return userRepository.save(user);
     }
 
