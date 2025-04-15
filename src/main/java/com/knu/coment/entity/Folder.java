@@ -26,10 +26,6 @@ public class Folder {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public Folder(User user) {
-        this.user = user;
-        this.folderName = "default";
-    }
     public Folder(String folderName, User user) {
         this.folderName = folderName;
         this.user = user;
