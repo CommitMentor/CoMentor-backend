@@ -75,8 +75,13 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/swagger-ui/**"),
                                 new AntPathRequestMatcher("/v3/api-docs/**")
                         ).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/user/**"))
-                        .hasAuthority(Role.USER.getKey())
+                        .requestMatchers(new AntPathRequestMatcher("/user/**"),
+                                        new AntPathRequestMatcher("/project/**"),
+                                        new AntPathRequestMatcher("/github/**"),
+                                        new AntPathRequestMatcher("/folder/**"),
+                                        new AntPathRequestMatcher("/question/**"),
+                                        new AntPathRequestMatcher("/feedback/**")
+                        ).hasAuthority(Role.USER.getKey())
                         .anyRequest().authenticated()
                 )
 
