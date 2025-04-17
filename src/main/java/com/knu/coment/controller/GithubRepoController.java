@@ -53,7 +53,7 @@ public class GithubRepoController {
 
         List<RepoDto> repos = githubRepoService.getUserRepos(githubAccessToken).block();
 
-        List<Long> userRepoIds = repoRepository.findRepoIdsByUserGithubId(githubId);
+        List<Long> userRepoIds = repoRepository.findRepoIdsByUserId(user.getId());
 
         List<RepoListDto> repoList = repos.stream()
                 .filter(repo -> !userRepoIds.contains(repo.getId()))

@@ -30,40 +30,26 @@ public class User {
     @Column(unique = true)
     private String githubId;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<UserStack> userStacks = new HashSet<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Set<Project> projects = new HashSet<>();
-
     private String refreshToken;
     private String githubAccessToken;
 
     @Column(name ="avatar_url")
     private String avatarUrl;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<CsQuestion> csQuestions = new HashSet<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Folder> folders = new HashSet<>();
-
     @Builder
-    public User(String userName, String email, Boolean notification, Role userRole, String githubId, Set<UserStack> userStacks, String avatarUrl){
+    public User(Long id, String userName, String email, Boolean notification, Role userRole, String githubId, String avatarUrl){
+        this.id = id;
         this.userName = userName;
         this.email = email;
         this.notification = notification;
         this.userRole = userRole;
         this.githubId = githubId;
-        this.userStacks = userStacks != null ? userStacks : new HashSet<>();
         this.avatarUrl = avatarUrl;
     }
 
-    public User update(String email, Boolean notification, Set<UserStack> stacks) {
+    public User update(String email, Boolean notification) {
         if (email != null) this.email = email;
         if (notification != null) this.notification = notification;
-        this.userStacks.clear();
-        this.userStacks.addAll(stacks);
         return this;
     }
 
@@ -83,15 +69,4 @@ public class User {
         this.githubAccessToken = githubAccessToken;
     }
 
-    public void createDefaultFolder() {
-        if (folders.stream().noneMatch(f -> "default".equals(f.getFolderName()))) {
-            Folder defaultFolder = new Folder( "default", this);
-            addFolder(defaultFolder);
-        }
-    }
-
-    public void addFolder(Folder folder) {
-        this.folders.add(folder);
-        folder.setUser(this);
-    }
 }

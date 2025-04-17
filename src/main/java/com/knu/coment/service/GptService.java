@@ -51,31 +51,64 @@ public class GptService {
         StringBuilder prompt = new StringBuilder();
 
         prompt.append("당신은 10년 경력의 시니어 소프트웨어 엔지니어이자 면접관입니다. ");
-        prompt.append("아래에 제공된 코드만 보고, 코드에 나타난 프로그래밍 언어와 기술 스택, 핵심 CS 개념(OOP, 자료구조, DB, 네트워크 등)을 파악해 ");
-        prompt.append("해당 코드와 연관된 CS 면접 질문을 3개를 한국어로 생성해주세요.\n\n");
+        prompt.append("아래 제공된 코드와 프로젝트 설명을 바탕으로, 기술 면접에 사용할 CS 기반 질문을 생성하세요.\n\n");
 
-        prompt.append("코드는 다음과 같습니다:\n");
+        prompt.append("전체 코드:\n");
         prompt.append("```").append(userCode).append("```\n\n");
-        prompt.append("추가적인 프로젝트 정보(참고용): ").append(projectInfo).append("\n\n");
+        prompt.append("프로젝트 정보: ").append(projectInfo).append("\n\n");
 
         prompt.append("지침:\n");
-        prompt.append("1. 코드를 보고 사용된 언어와 라이브러리/프레임워크(추정 가능하다면) 및 핵심 CS 개념을 최대한 찾아내세요.\n");
-        prompt.append("2. 그중 중요도나 면접 빈도가 높은 개념을 기준으로 3가지 질문을 만들되, ");
-        prompt.append("가능하면 서로 다른 주제를 다루세요 (예: OOP/자료구조/알고리즘 등).\n");
-        prompt.append("3. 각 질문은 해당 코드에서 어떤 부분이 그 CS 개념과 관련되는지 간단히 언급하며, ");
-        prompt.append("개념 전반에 대한 이해를 확인할 수 있게 작성하세요.\n");
-        prompt.append("4. 출력은 다음 JSON 배열 구조를 따라주세요. 질문 이외의 설명은 넣지 마세요.\n");
-        prompt.append("[\n");
-        prompt.append("  { \"question\": \"첫 번째 질문\" },\n");
-        prompt.append("  { \"question\": \"두 번째 질문\" },\n");
-        prompt.append("  { \"question\": \"세 번째 질문\" }\n");
-        prompt.append("]\n");
+        prompt.append("1. 전체 코드를 분석하고, 각 질문마다 해당 질문과 관련된 **코드 블록을 의미 단위로 넓게 발췌**해서 함께 제시하세요.\n");
+        prompt.append("   - 예를 들어, 하나의 메서드 전체 또는 연관된 조건문, 반복문, try-catch 블록 등은 맥락을 유지하도록 함께 포함하세요.\n");
+        prompt.append("   - 이 발췌된 코드는 반드시 userCode 내 원본 텍스트와 정확히 일치해야 합니다.\n");
+        prompt.append("   - 단순 setter/getter, import, 불필요한 주석 등은 여전히 제외하세요.\n");
+        prompt.append("2. 각 질문은 한국어로 작성하며, 아래 Enum 목록 중 하나의 category를 정확히 포함해야 합니다.\n");
+        prompt.append("3. 질문 수는 총 3개이며, 서로 다른 주제를 다루도록 하세요.\n");
+        prompt.append("4. 코드 발췌는 자료구조 사용, 동시성 처리, DB 접근, 알고리즘 로직 등 면접 질문으로 삼을 만한 핵심 내용을 중심으로 하되, **질문의 이해를 돕기 위해 연관된 코드 맥락을 충분히 포함**하세요.\n\n");
 
-        prompt.append("예) [ { \"question\": \"이 코드는 OO개념 중 상속을 어떻게 활용했나요?\" }, ... ]\n");
-        prompt.append("출력은 위와 같은 JSON 배열 형태만 정확히 반환하세요.\n");
+
+        prompt.append("사용 가능한 category 값 (정확히 복사):\n");
+        prompt.append("[\n");
+        prompt.append("  \"DATA_STRUCTURES_ALGORITHMS\",\n");
+        prompt.append("  \"OPERATING_SYSTEMS\",\n");
+        prompt.append("  \"NETWORKING\",\n");
+        prompt.append("  \"DATABASES\",\n");
+        prompt.append("  \"SECURITY\",\n");
+        prompt.append("  \"LANGUAGE_AND_DEVELOPMENT_PRINCIPLES\",\n");
+        prompt.append("]\n\n");
+
+        prompt.append("출력 형식 (질문별 발췌 코드 포함):\n");
+        prompt.append("[\n");
+        prompt.append("  {\n");
+        prompt.append("    \"question\": \"면접 질문 (한국어)\",\n");
+        prompt.append("    \"category\": \"<Enum 상수명>\",\n");
+        prompt.append("    \"relatedCode\": \"userCode 내 해당 질문과 직접 관련 있는 부분을 정확히 복사\"\n");
+        prompt.append("  },\n");
+        prompt.append("  ... (총 3개)\n");
+        prompt.append("]\n\n");
+
+        prompt.append("예시:\n");
+        prompt.append("[\n");
+        prompt.append("  {\n");
+        prompt.append("    \"question\": \"HashMap을 캐시로 사용하는 것의 장단점은 무엇인가요?\",\n");
+        prompt.append("    \"category\": \"DATA_STRUCTURES_ALGORITHMS\",\n");
+        prompt.append("    \"relatedCode\": \"private final Map<String, User> cache = new HashMap<>();\"\n");
+        prompt.append("  },\n");
+        prompt.append("  {\n");
+        prompt.append("    \"question\": \"이 코드에서 동시성 이슈가 발생할 수 있는 부분은 어디이며, 어떻게 해결할 수 있을까요?\",\n");
+        prompt.append("    \"category\": \"OPERATING_SYSTEMS\",\n");
+        prompt.append("    \"relatedCode\": \"public synchronized User getUser(String id) { return cache.get(id); }\"\n");
+        prompt.append("  },\n");
+        prompt.append("  {\n");
+        prompt.append("    \"question\": \"이 메서드는 SOLID 원칙 중 어떤 부분을 위배하고 있나요?\",\n");
+        prompt.append("    \"category\": \"NETWORKING\",\n");
+        prompt.append("    \"relatedCode\": \"public void saveAndNotify(User user) { save(user); notifyAdmin(user); }\"\n");
+        prompt.append("  }\n");
+        prompt.append("]");
 
         return prompt.toString();
     }
+
 
     public String createPromptForAnswerProject(String userCode, String csQuestion, String answer) {
         StringBuilder prompt = new StringBuilder();

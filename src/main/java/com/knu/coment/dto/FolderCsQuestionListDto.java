@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class FolderCsQuestionListDto {
-    private String folderName;
+    private String fileName;
     private Long questionId;
     private String question;
     private QuestionStatus questionStatus;

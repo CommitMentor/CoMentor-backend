@@ -19,23 +19,18 @@ public class RepoDto {
     @JsonProperty("created_at")
     private String createdAt;
 
-    @JsonProperty("updated_at")
-    private String updatedAt;
-
     private String language;
 
     private OwnerDto owner;
 
     public Repo toEntity(){
-        return new Repo(this.id, this.name, this.htmlUrl, this.createdAt, this.updatedAt, this.language, this.owner);
+        return new Repo(this.id, this.name, this.htmlUrl, this.createdAt, this.language, this.owner);
     }
 
-    public RepoDto(Long id, String name, String htmlUrl, String createdAt, String updatedAt, String language, OwnerDto owner) {
+    public RepoDto(Long id, String name, String htmlUrl, String language, OwnerDto owner) {
         this.id = id;
         this.name = name;
         this.htmlUrl = htmlUrl;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
         this.language = language;
         this.owner = owner;
     }

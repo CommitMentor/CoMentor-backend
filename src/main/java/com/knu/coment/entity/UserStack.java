@@ -10,35 +10,18 @@ import java.util.Objects;
 @Entity
 @Getter
 @NoArgsConstructor
+@IdClass(UserStackId.class)
 public class UserStack {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long userId;
 
+    @Id
     @Enumerated(EnumType.STRING)
-    @Column(name = "stack_name", nullable = false)
-    private Stack stackName;
+    private Stack stack;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id",  nullable = false)
-    private User user;
-
-    public UserStack(User user, Stack stackName) {
-        this.user = user;
-        this.stackName = stackName;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UserStack userStack = (UserStack) o;
-        return stackName == userStack.stackName && Objects.equals(user, userStack.user);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(user, stackName);
+    public UserStack(Long userId, Stack stack) {
+        this.userId = userId;
+        this.stack = stack;
     }
 }

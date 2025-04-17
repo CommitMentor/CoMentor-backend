@@ -1,6 +1,7 @@
 package com.knu.coment.dto;
 
 import com.knu.coment.entity.User;
+import com.knu.coment.entity.UserStack;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,7 +19,7 @@ public class UserDto {
     @Schema(description = "알림 설정", example = "true")
     private boolean notification;
     @NotNull(message = "stackNames cannot be null")
-    @Schema(description = "사용자 스택 배열", example = "[\"FRONTEND\", \"BACKEND\",\"DB\",\"ALGORITHM\"]")
+    @Schema(description = "사용자 스택 배열", example = "[\"FRONTEND\", \"BACKEND\"]")
     private Set<@NotBlank(message = "stack name cannot be blank") String> stackNames;
     @Schema(description = "사용자 이미지", example = "https://``")
     private String avatarUrl;
@@ -32,13 +33,15 @@ public class UserDto {
         this.avatarUrl = avatarUrl;
         this.userName = userName;
     }
-    public static UserDto fromEntity(User user) {
+    public static UserDto fromEntity(User user, Set<UserStack> userStacks) {
+        Set<String> stackNames = userStacks.stream()
+                .map(userStack -> userStack.getStack().name())
+                .collect(Collectors.toSet());
+
         return new UserDto(
                 user.getEmail(),
                 user.getNotification(),
-                user.getUserStacks().stream()
-                        .map(userStack -> userStack.getStackName().name())
-                        .collect(Collectors.toSet()),
+                stackNames,
                 user.getAvatarUrl(),
                 user.getUserName()
         );

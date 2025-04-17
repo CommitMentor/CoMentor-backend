@@ -1,7 +1,7 @@
 package com.knu.coment.controller;
 
 import com.knu.coment.dto.gpt.*;
-import com.knu.coment.entity.CsQuestion;
+import com.knu.coment.entity.ProjectCsQuestion;
 import com.knu.coment.global.code.SuccessCode;
 import com.knu.coment.service.CsQuestionService;
 import com.knu.coment.util.ApiResponseUtil;
@@ -37,17 +37,14 @@ public class CsQuestionController {
     public ResponseEntity<?> createQuestion(@AuthenticationPrincipal UserDetails userDetails,
                                                      @RequestBody CreateProjectCsQuestionDto dto) {
         String githubId = userDetails.getUsername();
-        String processedUserCode = dto.getUserCode()
-                .replace("\r", "\\r")
-                .replace("\n", "\\n");
-        List<CsQuestion> questions = csQuestionService.createProjectQuestions(
+        List<ProjectCsQuestion> questions = csQuestionService.createProjectQuestions(
                 githubId,
                 dto.getProjectId(),
-                processedUserCode,
+                dto.getUserCode(),
                 dto.getFolderName()
         );
         List<ProjectCsQuestionResponse> responseList = questions.stream()
-                .map(q -> new ProjectCsQuestionResponse(q.getId(), q.getQuestion()))
+                .map(q -> new ProjectCsQuestionResponse(q.getId(), q.getRelatedCode(),q.getCsCategory(), q.getQuestion()))
                 .collect(Collectors.toList());
 
         return ApiResponseUtil.createSuccessResponse(

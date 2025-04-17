@@ -49,7 +49,7 @@ public class FolderController {
         @ApiResponse(responseCode = "400", description = "잘못된 요청"), @ApiResponse(responseCode = "404", description = "폴더 질문 목록 조회 실패"),
         @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public ResponseEntity<?> getFolderQuestions(@AuthenticationPrincipal UserDetails userDetails, Long folderId) {
+    public ResponseEntity<?> getFolderQuestions(@AuthenticationPrincipal UserDetails userDetails, @RequestParam Long folderId) {
         String githubId = userDetails.getUsername();
         List<FolderCsQuestionListDto> folderQuestions = folderService.getFolderQuestions(githubId, folderId);
         return ApiResponseUtil.createSuccessResponse(
@@ -83,19 +83,33 @@ public class FolderController {
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.DELETE_SUCCESS.getMessage());
     }
+    @Operation(summary = "폴더 이름 수정", description = "폴더 이름을 수정하는 API입니다.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "폴더 이름 수정 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청"), @ApiResponse(responseCode = "404", description = "폴더 이름 수정 실패"),
+        @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @PutMapping
+    public ResponseEntity<?> updateFolderName(@AuthenticationPrincipal UserDetails userDetails,
+                                              @RequestParam Long folderId,
+                                              @RequestParam String folderName) {
+        String githubId = userDetails.getUsername();
+        folderService.updateFolderName(githubId, folderId, folderName);
+        return ApiResponseUtil.createSuccessResponse(
+                SuccessCode.UPDATE_SUCCESS.getMessage());
+    }
     @Operation(summary = "폴더 삭제", description = "폴더를 삭제하는 API입니다.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "폴더 삭제 성공"),
         @ApiResponse(responseCode = "400", description = "잘못된 요청"), @ApiResponse(responseCode = "404", description = "폴더 삭제 실패"),
         @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @DeleteMapping("/delete")
+    @DeleteMapping("")
     public ResponseEntity<?> deleteFolder(@AuthenticationPrincipal UserDetails userDetails,
-                                          @RequestParam String folderName) {
+                                          @RequestParam Long folderId) {
         String githubId = userDetails.getUsername();
-        folderService.deleteFolder(githubId, folderName);
+        folderService.deleteFolder(githubId, folderId);
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.DELETE_SUCCESS.getMessage());
     }
-
 }

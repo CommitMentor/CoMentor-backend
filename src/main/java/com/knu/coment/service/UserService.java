@@ -2,6 +2,7 @@ package com.knu.coment.service;
 
 import com.knu.coment.config.auth.dto.OAuthAttributes;
 import com.knu.coment.dto.UserDto;
+import com.knu.coment.entity.Folder;
 import com.knu.coment.entity.UserStack;
 import com.knu.coment.exception.ProjectExceptionHandler;
 import com.knu.coment.exception.UserExceptionHandler;
@@ -10,7 +11,9 @@ import com.knu.coment.exception.code.UserErrorCode;
 import com.knu.coment.entity.User;
 import com.knu.coment.global.Role;
 import com.knu.coment.global.Stack;
+import com.knu.coment.repository.FolderRepository;
 import com.knu.coment.repository.UserRepository;
+import com.knu.coment.repository.UserStackRepository;
 import com.knu.coment.security.JwtTokenProvider;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,15 +27,17 @@ import java.util.stream.Collectors;
 @Transactional
 public class UserService {
     private final UserRepository userRepository;
+    private final FolderRepository folderRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserStackRepository userStackRepository;
 
     public User findByGithubId(String githubId) {
         return userRepository.findByGithubId(githubId)
                 .orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
     }
 
-    public User saveUser(User user) {
-        return userRepository.save(user);
+    public void saveUser(User user) {
+         userRepository.save(user);
     }
 
     public User saveOrUpdateGithub(OAuthAttributes attributes) {
@@ -47,13 +52,14 @@ public class UserService {
         if (user.getUserRole() == Role.USER) {
             throw new UserExceptionHandler(UserErrorCode.ALREADY_JOINED_USER);
         }
-        Set<UserStack> stacks = dto.getStackNames().stream()
-                .map(name -> new UserStack(user, Stack.valueOf(name)))
-                .collect(Collectors.toSet());
-
-        user.update(dto.getEmail(), dto.isNotification(), stacks);
+        user.update(dto.getEmail(), dto.isNotification());
         user.updateRole(Role.USER);
-        user.createDefaultFolder();
+        Set<UserStack> stacks = dto.getStackNames().stream()
+                .map(name -> new UserStack(user.getId(), Stack.valueOf(name)))
+                .collect(Collectors.toSet());
+        userStackRepository.saveAll(stacks);
+        Folder folder = new Folder( "default", user.getId());
+        folderRepository.save(folder);
         return userRepository.save(user);
     }
 
@@ -63,11 +69,9 @@ public class UserService {
         if(user == null || user.getRefreshToken() == null) {
             throw new UserExceptionHandler(UserErrorCode.MISSING_REQUIRED_FIELD);
         }
-
         if (!jwtTokenProvider.validateToken(user.getRefreshToken())) {
             throw new UserExceptionHandler(UserErrorCode.INVALID_REFRESH_TOKEN);
         }
-
         String newRefreshToken = jwtTokenProvider.createRefreshToken(githubId);
         user.updateRefreshToken(newRefreshToken);
         return userRepository.save(user);
@@ -75,22 +79,25 @@ public class UserService {
 
     public UserDto getUserInfo(String githubId) {
         User user = findByGithubId(githubId);
-        return UserDto.fromEntity(user);
+        Set<UserStack> userStacks = userStackRepository.findAllByUserId(user.getId());
+        return UserDto.fromEntity(user, userStacks);
     }
 
     @Transactional
     public User updateInfo(String githubId, UserDto userDto) {
         User user = findByGithubId(githubId);
+        userStackRepository.deleteAllByUserId(user.getId());
         Set<UserStack> stacks = userDto.getStackNames().stream()
-                .map(name -> new UserStack(user, Stack.valueOf(name)))
+                .map(name -> new UserStack(user.getId(), Stack.valueOf(name)))
                 .collect(Collectors.toSet());
         if (stacks.isEmpty()) {
             throw new ProjectExceptionHandler(ProjectErrorCode.INVALID_RROJECT_STACK);
         }
-        user.update(userDto.getEmail(), userDto.isNotification(), stacks);
-
+        userStackRepository.saveAll(stacks);
+        user.update(userDto.getEmail(), userDto.isNotification());
         return userRepository.save(user);
     }
+
 
     public User withdrawn(String githubId) {
         User user = findByGithubId(githubId);
