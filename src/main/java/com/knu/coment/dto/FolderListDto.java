@@ -7,5 +7,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class FolderListDto {
     private Long folderId;
-    private String folderName;
+    private String fileName;
 }

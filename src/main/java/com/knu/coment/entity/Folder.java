@@ -5,9 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Entity
 @Getter
 @Setter
@@ -17,18 +14,13 @@ public class Folder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String folderName;
+    private String fileName;
 
-    @OneToMany(mappedBy = "folder", cascade = CascadeType.PERSIST)
-    private Set<CsQuestion> questions = new HashSet<>();
+    private Long userId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    public Folder(String folderName, User user) {
-        this.folderName = folderName;
-        this.user = user;
+    public Folder(String fileName, Long userId) {
+        this.fileName = fileName;
+        this.userId = userId;
     }
 
 }

@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface RepoRepository extends JpaRepository<Repo, Long> {
 
-    @Query("select r.id from Repo r join r.projects p where p.user.githubId = :githubId")
-    List<Long> findRepoIdsByUserGithubId(String githubId);
+    @Query("select p.repoId from Project p where p.userId = :userId and p.repoId is not null")
+    List<Long> findRepoIdsByUserId(Long userId);
 
 }

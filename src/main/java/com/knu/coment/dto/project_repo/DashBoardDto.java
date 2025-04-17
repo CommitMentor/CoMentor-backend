@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,13 +26,12 @@ public class DashBoardDto {
     private String role;
     @Schema(description = "레포 상태", example = "PROGRESS")
     private Status status;
-    @Schema(description = "레포 생성일", example = "2021-09-01")
-    private String updatedAt;
+    @Schema(description = "레포 업데이트", example = "2021-09-01")
+    private LocalDateTime updatedAt;
     @Schema(description = "레포 소유자", example = "코멘토")
     private String login;
 
-    public static DashBoardDto fromEntity(Project project) {
-        Repo repo = project.getRepo();
+    public static DashBoardDto fromEntity(Project project, Repo repo) {
         return new DashBoardDto(
                 project.getId(),
                 (repo != null) ? repo.getName() : null,
@@ -38,9 +39,10 @@ public class DashBoardDto {
                 project.getDescription(),
                 project.getRole(),
                 project.getStatus(),
-                (repo != null) ? repo.getUpdatedAt() : null,
+                project.getUpdatedAt(),
                 (repo != null && repo.getOwner() != null) ? repo.getOwner().getLogin() : null
         );
     }
+
 }
 

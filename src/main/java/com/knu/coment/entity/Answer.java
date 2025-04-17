@@ -24,14 +24,12 @@ public class Answer {
     @Enumerated(EnumType.STRING)
     private Author author;
 
-    @ManyToOne
-    @JoinColumn(name = "csQuestion_id", nullable = true)
-    private CsQuestion csQuestion;
+    private Long projectCsQuestionId;
 
-    public Answer(String content, LocalDateTime answeredAt, Author author, CsQuestion csQuestion) {
+    public Answer(String content, LocalDateTime answeredAt, Author author, Long projectCsQuestionId) {
         this.content = content;
         this.answeredAt = answeredAt;
         this.author = author;
-        this.csQuestion = csQuestion;
+        this.projectCsQuestionId = projectCsQuestionId;
     }
 }

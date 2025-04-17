@@ -19,9 +19,6 @@ public class CreateProjectDto {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    public Project toEntity(){
-        return new Project(this.description, this.role, this.status);
-    }
     public CreateProjectDto(Long id, String description, String role, Status status) {
         this.id = id;
         this.description = description;

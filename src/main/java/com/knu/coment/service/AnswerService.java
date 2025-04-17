@@ -3,7 +3,7 @@ package com.knu.coment.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knu.coment.entity.Answer;
-import com.knu.coment.entity.CsQuestion;
+import com.knu.coment.entity.ProjectCsQuestion;
 import com.knu.coment.exception.AnswerExceptionHandler;
 import com.knu.coment.exception.QuestionExceptionHandler;
 import com.knu.coment.exception.code.AnswerErrorCode;
@@ -11,7 +11,7 @@ import com.knu.coment.exception.code.QuestionErrorCode;
 import com.knu.coment.global.Author;
 import com.knu.coment.global.QuestionStatus;
 import com.knu.coment.repository.AnswerRepository;
-import com.knu.coment.repository.CsQuestionRepository;
+import com.knu.coment.repository.ProjectCsQuestionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,34 +24,34 @@ import java.util.Map;
 public class AnswerService {
 
     private final AnswerRepository answerRepository;
-    private final CsQuestionRepository csQuestionRepository;
+    private final ProjectCsQuestionRepository projectCsQuestionRepository;
     private final UserService userService;
     private final GptService gptService;
 
     public Answer createAnswer(String githubId, Long csQuestionId, String answer) {
         userService.findByGithubId(githubId);
-        CsQuestion csQuestion = csQuestionRepository.findById(csQuestionId)
+        ProjectCsQuestion projectCsQuestion = projectCsQuestionRepository.findById(csQuestionId)
                 .orElseThrow(() -> new QuestionExceptionHandler(QuestionErrorCode.NOT_FOUND_QUESTION));
-        if(csQuestion.getQuestionStatus() == QuestionStatus.DONE) {
+        if(projectCsQuestion.getQuestionStatus() == QuestionStatus.DONE) {
             throw new AnswerExceptionHandler(AnswerErrorCode.ALREADY_DONE_ANSWER);
         }
         Answer newAnswer = new Answer(
                 answer,
                 LocalDateTime.now(),
                 Author.USER,
-                csQuestion
+                csQuestionId
         );
         answerRepository.save(newAnswer);
-        csQuestion.markAsDone();
-        csQuestionRepository.save(csQuestion);
-        String prompt = gptService.createPromptForAnswerProject(csQuestion.getUserCode(), csQuestion.getQuestion(), answer);
+        projectCsQuestion.markAsDone();
+        projectCsQuestionRepository.save(projectCsQuestion);
+        String prompt = gptService.createPromptForAnswerProject(projectCsQuestion.getRelatedCode(), projectCsQuestion.getQuestion(), answer);
         String generatedAnswer = gptService.callGptApi(prompt);
         generatedAnswer = getFeedback(generatedAnswer);
         Answer newFeedback = new Answer(
                 generatedAnswer,
                 LocalDateTime.now(),
                 Author.AI,
-                csQuestion
+                csQuestionId
         );
         return answerRepository.save(newFeedback);
     }
