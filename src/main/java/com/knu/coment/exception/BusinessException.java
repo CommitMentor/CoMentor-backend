@@ -8,9 +8,9 @@ import lombok.Getter;
 @Getter
 public abstract class BusinessException extends RuntimeException {
 
-    private final CommonErrorCode errorCode;   // ✅ enum 타입 고정
+    private final ErrorCode  errorCode;   // ✅ enum 타입 고정
 
-    protected BusinessException(CommonErrorCode code) {
+    protected BusinessException(ErrorCode  code) {
         super(code.getMessage());
         this.errorCode = code;
     }

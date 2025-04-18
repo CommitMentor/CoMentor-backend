@@ -6,7 +6,7 @@ import com.knu.coment.dto.FolderListDto;
 import com.knu.coment.entity.ProjectCsQuestion;
 import com.knu.coment.entity.Folder;
 import com.knu.coment.entity.User;
-import com.knu.coment.exception.FolderExceptionHandler;
+import com.knu.coment.exception.FolderException;
 import com.knu.coment.exception.code.FolderErrorCode;
 import com.knu.coment.repository.ProjectCsQuestionRepository;
 import com.knu.coment.repository.FolderRepository;
@@ -38,7 +38,7 @@ public class FolderService {
     public List<FolderCsQuestionListDto> getFolderQuestions(String githubId, Long folderId) {
         User user = userService.findByGithubId(githubId);
         Folder folder = folderRepository.findByUserIdAndId(user.getId(), folderId)
-                .orElseThrow(() -> new FolderExceptionHandler(FolderErrorCode.NOT_FOUND_FOLDER));
+                .orElseThrow(() -> new FolderException(FolderErrorCode.NOT_FOUND_FOLDER));
 
         List<ProjectCsQuestion> questions = projectCsQuestionRepository.findAllByFolderId(folderId);
 
@@ -76,12 +76,12 @@ public class FolderService {
 
         String cleanName = sanitize(dto.getFileName());
         Folder folder = folderRepository.findByUserIdAndFileName(user.getId(), cleanName)
-                .orElseThrow(() -> new FolderExceptionHandler(FolderErrorCode.NOT_FOUND_FOLDER));
+                .orElseThrow(() -> new FolderException(FolderErrorCode.NOT_FOUND_FOLDER));
 
         ProjectCsQuestion projectCsQuestion = csQuestionService.findById(dto.getCsQuestionId());
 
         if (projectCsQuestion.getFolderId() == null || !projectCsQuestion.getFolderId().equals(folder.getId())) {
-            throw new FolderExceptionHandler(FolderErrorCode.BAD_REQUEST);
+            throw new FolderException(FolderErrorCode.BAD_REQUEST);
         }
         projectCsQuestion.unBookMark();
         projectCsQuestionRepository.save(projectCsQuestion);
@@ -90,15 +90,15 @@ public class FolderService {
     public void updateFolderName(String githubId, Long folderId, String newFileName) {
         User user = userService.findByGithubId(githubId);
         Folder folder = folderRepository.findByUserIdAndId(user.getId(), folderId)
-                .orElseThrow(() -> new FolderExceptionHandler(FolderErrorCode.NOT_FOUND_FOLDER));
+                .orElseThrow(() -> new FolderException(FolderErrorCode.NOT_FOUND_FOLDER));
         String cleanName = sanitize(newFileName);
         if (cleanName == null || cleanName.isEmpty()) {
-            throw new FolderExceptionHandler(FolderErrorCode.MISSING_REQUIRED_FIELD);
+            throw new FolderException(FolderErrorCode.MISSING_REQUIRED_FIELD);
         }
 
         boolean duplicated = folderRepository.existsByUserIdAndFileName(user.getId(), cleanName);
         if (duplicated) {
-            throw new FolderExceptionHandler(FolderErrorCode.DUPLICATE_FILE_NAME);
+            throw new FolderException(FolderErrorCode.DUPLICATE_FILE_NAME);
         }
 
         folder.setFileName(cleanName);
@@ -109,7 +109,7 @@ public class FolderService {
     public void deleteFolder(String githubId, Long folderId) {
         User user = userService.findByGithubId(githubId);
         Folder folder = folderRepository.findByUserIdAndId(user.getId(), folderId)
-                .orElseThrow(() -> new FolderExceptionHandler(FolderErrorCode.NOT_FOUND_FOLDER));
+                .orElseThrow(() -> new FolderException(FolderErrorCode.NOT_FOUND_FOLDER));
         List<ProjectCsQuestion> questions = projectCsQuestionRepository.findAllByFolderId(folderId);
         for (ProjectCsQuestion question : questions) {
             question.unBookMark();

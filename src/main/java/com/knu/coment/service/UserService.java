@@ -4,8 +4,8 @@ import com.knu.coment.config.auth.dto.OAuthAttributes;
 import com.knu.coment.dto.UserDto;
 import com.knu.coment.entity.Folder;
 import com.knu.coment.entity.UserStack;
-import com.knu.coment.exception.ProjectExceptionHandler;
-import com.knu.coment.exception.UserExceptionHandler;
+import com.knu.coment.exception.ProjectException;
+import com.knu.coment.exception.UserException;
 import com.knu.coment.exception.code.ProjectErrorCode;
 import com.knu.coment.exception.code.UserErrorCode;
 import com.knu.coment.entity.User;
@@ -33,7 +33,7 @@ public class UserService {
 
     public User findByGithubId(String githubId) {
         return userRepository.findByGithubId(githubId)
-                .orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
+                .orElseThrow(() -> new UserException(UserErrorCode.NOT_FOUND_USER));
     }
 
     public void saveUser(User user) {
@@ -50,7 +50,7 @@ public class UserService {
     public User join(String githubId, UserDto dto) {
         User user = findByGithubId(githubId);
         if (user.getUserRole() == Role.USER) {
-            throw new UserExceptionHandler(UserErrorCode.ALREADY_JOINED_USER);
+            throw new UserException(UserErrorCode.ALREADY_JOINED_USER);
         }
         user.update(dto.getEmail(), dto.isNotification());
         user.updateRole(Role.USER);
@@ -67,10 +67,10 @@ public class UserService {
     public User renewRefreshToken(String githubId) {
         User user = findByGithubId(githubId);
         if(user == null || user.getRefreshToken() == null) {
-            throw new UserExceptionHandler(UserErrorCode.MISSING_REQUIRED_FIELD);
+            throw new UserException(UserErrorCode.MISSING_REQUIRED_FIELD);
         }
         if (!jwtTokenProvider.validateToken(user.getRefreshToken())) {
-            throw new UserExceptionHandler(UserErrorCode.INVALID_REFRESH_TOKEN);
+            throw new UserException(UserErrorCode.INVALID_REFRESH_TOKEN);
         }
         String newRefreshToken = jwtTokenProvider.createRefreshToken(githubId);
         user.updateRefreshToken(newRefreshToken);
@@ -91,7 +91,7 @@ public class UserService {
                 .map(name -> new UserStack(user.getId(), Stack.valueOf(name)))
                 .collect(Collectors.toSet());
         if (stacks.isEmpty()) {
-            throw new ProjectExceptionHandler(ProjectErrorCode.INVALID_RROJECT_STACK);
+            throw new ProjectException(ProjectErrorCode.INVALID_RROJECT_STACK);
         }
         userStackRepository.saveAll(stacks);
         user.update(userDto.getEmail(), userDto.isNotification());

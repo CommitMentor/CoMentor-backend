@@ -4,14 +4,13 @@ import com.knu.coment.dto.UserDto;
 import com.knu.coment.entity.Folder;
 import com.knu.coment.entity.User;
 import com.knu.coment.entity.UserStack;
-import com.knu.coment.exception.UserExceptionHandler;
+import com.knu.coment.exception.UserException;
 import com.knu.coment.exception.code.UserErrorCode;
 import com.knu.coment.global.Role;
 import com.knu.coment.global.Stack;
 import com.knu.coment.repository.FolderRepository;
 import com.knu.coment.repository.UserRepository;
 import com.knu.coment.repository.UserStackRepository;
-import com.knu.coment.security.JwtTokenProvider;
 import com.knu.coment.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -90,7 +89,7 @@ class UserServiceTest {
                 .willReturn(Optional.empty());
         // when: "notExist" 인자로 메서드 호출
         assertThatThrownBy(() -> userService.findByGithubId("notExist"))
-                .isInstanceOf(UserExceptionHandler.class)
+                .isInstanceOf(UserException.class)
                 .hasMessageContaining(UserErrorCode.NOT_FOUND_USER.getMessage());
         // then: "notExist" 인자로 호출되었음을 검증
         verify(userRepository, times(1)).findByGithubId("notExist");
@@ -150,7 +149,7 @@ class UserServiceTest {
 
         // (25) 실제 호출 시 예외 발생 확인
         assertThatThrownBy(() -> userService.join("testGithubId", userDto))
-                .isInstanceOf(UserExceptionHandler.class)
+                .isInstanceOf(UserException.class)
                 .hasMessageContaining(UserErrorCode.ALREADY_JOINED_USER.getMessage());
     }
 

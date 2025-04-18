@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knu.coment.dto.gpt.*;
 import com.knu.coment.entity.*;
-import com.knu.coment.exception.ProjectExceptionHandler;
-import com.knu.coment.exception.QuestionExceptionHandler;
+import com.knu.coment.exception.ProjectException;
+import com.knu.coment.exception.QuestionException;
 import com.knu.coment.exception.code.ProjectErrorCode;
 import com.knu.coment.exception.code.QuestionErrorCode;
 import com.knu.coment.global.CSCategory;
@@ -37,14 +37,14 @@ public class CsQuestionService {
 
     private void validateProjectOwner(Long userId, Long projectId) {
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+                .orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         if (!project.getUserId().equals(userId)) {
-            throw new ProjectExceptionHandler(ProjectErrorCode.UNAUTHORIZED_ACCESS);
+            throw new ProjectException(ProjectErrorCode.UNAUTHORIZED_ACCESS);
         }
     }
     public ProjectCsQuestion findById(Long projectQuestionId) {
         return projectCsQuestionRepository.findById(projectQuestionId)
-                .orElseThrow(() -> new QuestionExceptionHandler(QuestionErrorCode.NOT_FOUND_QUESTION));
+                .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
     }
     public List<ProjectCsQuestion> createProjectQuestions(String githubId, Long projectId, String userCode, String userCodeFolderName) {
         Project project = projectRepository.findById(projectId).orElseThrow();
@@ -145,7 +145,7 @@ public class CsQuestionService {
     @Transactional
     public void deleteProjectCsQuestion(Long projectCsQuestionId) {
         ProjectCsQuestion projectCsQuestion = projectCsQuestionRepository.findById(projectCsQuestionId)
-                .orElseThrow(() -> new QuestionExceptionHandler(QuestionErrorCode.NOT_FOUND_QUESTION));
+                .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
         Long csQuestionId = projectCsQuestion.getProjectId();
         answerRepository.deleteAllByProjectCsQuestionId(projectCsQuestionId);
 

@@ -4,7 +4,7 @@ import com.knu.coment.dto.project_repo.*;
 import com.knu.coment.entity.Project;
 import com.knu.coment.entity.Repo;
 import com.knu.coment.entity.User;
-import com.knu.coment.exception.ProjectExceptionHandler;
+import com.knu.coment.exception.ProjectException;
 import com.knu.coment.exception.code.ProjectErrorCode;
 import com.knu.coment.global.Role;
 import com.knu.coment.global.Status;
@@ -98,7 +98,7 @@ class ProjectServiceTest {
         when(projectRepository.existsByUserIdAndRepoId(user.getId(), repoDto.getId())).thenReturn(true);
 
         assertThatThrownBy(() -> projectService.createProject("testUser", createProjectDto))
-                .isInstanceOf(ProjectExceptionHandler.class)
+                .isInstanceOf(ProjectException.class)
                 .hasMessage(ProjectErrorCode.DUPLICATE_PROJECT.getMessage());
     }
 
@@ -135,7 +135,7 @@ class ProjectServiceTest {
 
         // when & then
         assertThatThrownBy(() -> projectService.updateProject("wrongUser", 1L, updateDto))
-                .isInstanceOf(ProjectExceptionHandler.class)
+                .isInstanceOf(ProjectException.class)
                 .hasMessage(ProjectErrorCode.UNAUTHORIZED_ACCESS.getMessage());
     }
 
@@ -189,7 +189,7 @@ class ProjectServiceTest {
         when(userService.findByGithubId("wrongUser")).thenReturn(wrongUser);
 
         assertThatThrownBy(() -> projectService.getProjectInfo("wrongUser", 1L))
-                .isInstanceOf(ProjectExceptionHandler.class)
+                .isInstanceOf(ProjectException.class)
                 .hasMessage(ProjectErrorCode.UNAUTHORIZED_ACCESS.getMessage());
     }
 
@@ -200,7 +200,7 @@ class ProjectServiceTest {
         when(projectRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> projectService.deleteProject("testUser", 999L))
-                .isInstanceOf(ProjectExceptionHandler.class)
+                .isInstanceOf(ProjectException.class)
                 .hasMessage(ProjectErrorCode.NOT_FOUND_PROJECT.getMessage());
     }
 }

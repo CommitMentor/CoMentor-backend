@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knu.coment.entity.Answer;
 import com.knu.coment.entity.ProjectCsQuestion;
 import com.knu.coment.entity.User;
-import com.knu.coment.exception.AnswerExceptionHandler;
-import com.knu.coment.exception.QuestionExceptionHandler;
+import com.knu.coment.exception.AnswerException;
+import com.knu.coment.exception.QuestionException;
 import com.knu.coment.exception.code.AnswerErrorCode;
 import com.knu.coment.exception.code.QuestionErrorCode;
 import com.knu.coment.global.Author;
@@ -32,13 +32,13 @@ public class AnswerService {
     public Answer createAnswer(String githubId, Long csQuestionId, String answer) {
         User user = userService.findByGithubId(githubId);
         ProjectCsQuestion projectCsQuestion = projectCsQuestionRepository.findById(csQuestionId)
-                .orElseThrow(() -> new QuestionExceptionHandler(QuestionErrorCode.NOT_FOUND_QUESTION));
+                .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
         if (!user.getId().equals(projectCsQuestion.getUserId())) {
-            throw new AnswerExceptionHandler(
+            throw new AnswerException(
                     AnswerErrorCode.UNAUTHORIZED_QUESTION_ACCESS); // enum에 추가
         }
         if(projectCsQuestion.getQuestionStatus() == QuestionStatus.DONE) {
-            throw new AnswerExceptionHandler(AnswerErrorCode.ALREADY_DONE_ANSWER);
+            throw new AnswerException(AnswerErrorCode.ALREADY_DONE_ANSWER);
         }
         Answer newAnswer = new Answer(
                 answer,

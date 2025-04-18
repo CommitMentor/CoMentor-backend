@@ -5,7 +5,7 @@ import com.knu.coment.entity.Project;
 import com.knu.coment.entity.ProjectCsQuestion;
 import com.knu.coment.entity.Repo;
 import com.knu.coment.entity.User;
-import com.knu.coment.exception.ProjectExceptionHandler;
+import com.knu.coment.exception.ProjectException;
 import com.knu.coment.exception.code.ProjectErrorCode;
 import com.knu.coment.global.Status;
 import com.knu.coment.repository.ProjectCsQuestionRepository;
@@ -33,13 +33,13 @@ public class ProjectService {
 
     public Project findById(Long projectId) {
         return projectRepository.findById(projectId)
-                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+                .orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
     }
     public void isProjectOwner(String githubId, Long projectId) {
         Project project = findById(projectId);
         User user = userService.findByGithubId(githubId);
         if (!project.getUserId().equals(user.getId())) {
-            throw new ProjectExceptionHandler(ProjectErrorCode.UNAUTHORIZED_ACCESS);
+            throw new ProjectException(ProjectErrorCode.UNAUTHORIZED_ACCESS);
         }
     }
     @Transactional
@@ -50,11 +50,11 @@ public class ProjectService {
         RepoDto repodto = repoList.stream()
                 .filter(r -> r.getId().equals(dto.getId()))
                 .findFirst()
-                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+                .orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         repoRepository.save(repodto.toEntity());
         boolean projectExists = projectRepository.existsByUserIdAndRepoId(user.getId(), repodto.getId());
         if (projectExists) {
-            throw new ProjectExceptionHandler(ProjectErrorCode.DUPLICATE_PROJECT);
+            throw new ProjectException(ProjectErrorCode.DUPLICATE_PROJECT);
         }
         Project project = new Project(
                 dto.getDescription(),
@@ -102,7 +102,7 @@ public class ProjectService {
         Project project = findById(projectId);
         isProjectOwner(githubId, projectId);
         Repo repo = repoRepository.findById(project.getRepoId())
-                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_REPO));
+                .orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_REPO));
         return DashBoardDto.fromEntity(project, repo);
     }
     public void deleteProject(String githubId, Long projectId) {

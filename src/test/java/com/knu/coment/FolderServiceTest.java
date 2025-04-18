@@ -4,7 +4,7 @@ import com.knu.coment.dto.BookMarkRequestDto;
 import com.knu.coment.dto.FolderListDto;
 import com.knu.coment.entity.Folder;
 import com.knu.coment.entity.User;
-import com.knu.coment.exception.FolderExceptionHandler;
+import com.knu.coment.exception.FolderException;
 import com.knu.coment.exception.code.FolderErrorCode;
 import com.knu.coment.global.Role;
 import com.knu.coment.repository.FolderRepository;
@@ -74,7 +74,7 @@ public class FolderServiceTest {
         when(userService.findByGithubId("testGithubId")).thenReturn(user);
 
         assertThatThrownBy(() -> folderService.bookmarkQuestion("testGithubId", dto))
-                .isInstanceOf(FolderExceptionHandler.class)
+                .isInstanceOf(FolderException.class)
                 .hasMessage(FolderErrorCode.MISSING_REQUIRED_FIELD.getMessage());
     }
 
@@ -86,7 +86,7 @@ public class FolderServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> folderService.deleteFolder("testGithubId", 999L))
-                .isInstanceOf(FolderExceptionHandler.class)
+                .isInstanceOf(FolderException.class)
                 .hasMessage(FolderErrorCode.NOT_FOUND_FOLDER.getMessage());
     }
 }
