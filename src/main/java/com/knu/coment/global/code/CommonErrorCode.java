@@ -1,5 +1,6 @@
-package com.knu.coment.exception.code;
+package com.knu.coment.global.code;
 
+import com.knu.coment.exception.code.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -42,7 +42,7 @@ public class ProjectController {
         String githubId = userDetails.getUsername();
         projectService.createProject(githubId, createProjectDto);
 
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.INSERT_SUCCESS.getMessage());
     }
 
@@ -60,7 +60,7 @@ public class ProjectController {
         @RequestBody UpdateRepoDto updateRepoDto ) {
         String githubId = userDetails.getUsername();
         projectService.updateProject(githubId, projectId, updateRepoDto);
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
             SuccessCode.UPDATE_SUCCESS.getMessage());
     }
 
@@ -78,7 +78,7 @@ public class ProjectController {
         @RequestParam int page) {
         String githubId = userDetails.getUsername();
         PageResponse<DashBoardDto> dashBoardDtos = projectService.getUserProjects(githubId, status, page);
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
             SuccessCode.SELECT_SUCCESS.getMessage(),
                 dashBoardDtos);
     }
@@ -95,7 +95,7 @@ public class ProjectController {
         @RequestParam Long projectId) {
         String githubId = userDetails.getUsername();
         projectService.deleteProject(githubId, projectId);
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
             SuccessCode.DELETE_SUCCESS.getMessage());
     }
     @Operation(summary = "프로젝트 상세 조회", description = "프로젝트를 상세 조회하는 API입니다.")
@@ -111,7 +111,7 @@ public class ProjectController {
         @RequestParam Long projectId) {
         String githubId = userDetails.getUsername();
         DashBoardDto dashBoardDto = projectService.getProjectInfo(githubId, projectId);
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
             SuccessCode.SELECT_SUCCESS.getMessage(),
                 dashBoardDto);
     }

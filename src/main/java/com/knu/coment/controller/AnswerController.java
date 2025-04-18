@@ -42,7 +42,7 @@ public class AnswerController {
                 feedbackDto.getAnswer()
         );
 
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.INSERT_SUCCESS.getMessage(),
                 newFeedback.getContent()
         );

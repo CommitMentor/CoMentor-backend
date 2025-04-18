@@ -39,7 +39,7 @@ public class UserController {
 
         String githubId = userDetails.getUsername();
         userService.join(githubId, userDto);
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.INSERT_SUCCESS.getMessage());
     }
 
@@ -54,7 +54,7 @@ public class UserController {
     public ResponseEntity<Api_Response<UserDto>> getUserInfo(@AuthenticationPrincipal UserDetails userDetails) {
         String githubId = userDetails.getUsername();
         UserDto userInfo = userService.getUserInfo(githubId);
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 userInfo);
     }
@@ -71,7 +71,7 @@ public class UserController {
                                                                 @RequestBody UserDto userDto) {
         String githubId = userDetails.getUsername();
         userService.updateInfo(githubId, userDto);
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.INSERT_SUCCESS.getMessage());
     }
 
@@ -87,7 +87,7 @@ public class UserController {
         String githubId = userDetails.getUsername();
         User updatedUser = userService.withdrawn(githubId);
 
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.INSERT_SUCCESS.getMessage(), updatedUser.getRefreshToken());
     }
 
@@ -103,7 +103,7 @@ public class UserController {
         String githubId = userDetails.getUsername();
         User updatedUser = userService.renewRefreshToken(githubId);
 
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.INSERT_SUCCESS.getMessage(), updatedUser.getRefreshToken());
     }
 

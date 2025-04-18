@@ -65,7 +65,7 @@ public class GithubRepoController {
                 })
                 .collect(Collectors.toList());
 
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 repoList
         );

@@ -47,7 +47,7 @@ public class CsQuestionController {
                 .map(q -> new ProjectCsQuestionResponse(q.getId(), q.getRelatedCode(),q.getCsCategory(), q.getQuestion()))
                 .collect(Collectors.toList());
 
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.INSERT_SUCCESS.getMessage(),
                 responseList
         );
@@ -66,7 +66,7 @@ public class CsQuestionController {
         String githubId = userDetails.getUsername();
         List<CsQuestionListDto> csQuestionsList = csQuestionService.getGroupedCsQuestions(githubId, projectId);
 
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 csQuestionsList
         );
@@ -85,7 +85,7 @@ public class CsQuestionController {
         String githubId = userDetails.getUsername();
         ProjectCsQuestionInfoResponse projectCsQuestionResponse = csQuestionService.getCsQuestionDetail(githubId, csQuestionId);
 
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 projectCsQuestionResponse
         );

@@ -37,7 +37,7 @@ public class FolderController {
     public ResponseEntity<?> getFolderList(@AuthenticationPrincipal UserDetails userDetails) {
         String githubId = userDetails.getUsername();
         List<FolderListDto> folderList = folderService.getFolderList(githubId);
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 folderList);
     }
@@ -52,7 +52,7 @@ public class FolderController {
     public ResponseEntity<?> getFolderQuestions(@AuthenticationPrincipal UserDetails userDetails, @RequestParam Long folderId) {
         String githubId = userDetails.getUsername();
         List<FolderCsQuestionListDto> folderQuestions = folderService.getFolderQuestions(githubId, folderId);
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 folderQuestions);
     }
@@ -67,7 +67,7 @@ public class FolderController {
     public ResponseEntity<?> bookmarkQuestion(@AuthenticationPrincipal UserDetails userDetails, BookMarkRequestDto dto) {
         String githubId = userDetails.getUsername();
         folderService.bookmarkQuestion(githubId, dto);
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.INSERT_SUCCESS.getMessage());
     }
     @Operation(summary = "폴더 질문 북마크 해제", description = "폴더 질문 북마크를 해제하는 API입니다.")
@@ -80,7 +80,7 @@ public class FolderController {
     public ResponseEntity<?> cancelBookmark(@AuthenticationPrincipal UserDetails userDetails, BookMarkRequestDto dto) {
         String githubId = userDetails.getUsername();
         folderService.cancelBookmark(githubId, dto);
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.DELETE_SUCCESS.getMessage());
     }
     @Operation(summary = "폴더 이름 수정", description = "폴더 이름을 수정하는 API입니다.")
@@ -91,10 +91,10 @@ public class FolderController {
     })
     @PutMapping
     public ResponseEntity<?> updateFolderName(@AuthenticationPrincipal UserDetails userDetails,
-                                              FolderListDto folderListDto) {
+                                              @RequestBody FolderListDto folderListDto) {
         String githubId = userDetails.getUsername();
         folderService.updateFolderName(githubId, folderListDto.getFolderId(), folderListDto.getFileName());
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.UPDATE_SUCCESS.getMessage());
     }
     @Operation(summary = "폴더 삭제", description = "폴더를 삭제하는 API입니다.")
@@ -108,7 +108,7 @@ public class FolderController {
                                           @RequestParam Long folderId) {
         String githubId = userDetails.getUsername();
         folderService.deleteFolder(githubId, folderId);
-        return ApiResponseUtil.createSuccessResponse(
+        return ApiResponseUtil.ok(
                 SuccessCode.DELETE_SUCCESS.getMessage());
     }
 }
