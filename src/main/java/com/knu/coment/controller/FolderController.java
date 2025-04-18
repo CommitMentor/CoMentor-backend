@@ -64,7 +64,7 @@ public class FolderController {
         @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("")
-    public ResponseEntity<?> bookmarkQuestion(@AuthenticationPrincipal UserDetails userDetails, BookMarkRequestDto dto) {
+    public ResponseEntity<?> bookmarkQuestion(@AuthenticationPrincipal UserDetails userDetails, @RequestBody BookMarkRequestDto dto) {
         String githubId = userDetails.getUsername();
         folderService.bookmarkQuestion(githubId, dto);
         return ApiResponseUtil.ok(
@@ -77,7 +77,7 @@ public class FolderController {
         @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/cancel")
-    public ResponseEntity<?> cancelBookmark(@AuthenticationPrincipal UserDetails userDetails, BookMarkRequestDto dto) {
+    public ResponseEntity<?> cancelBookmark(@AuthenticationPrincipal UserDetails userDetails, @RequestBody BookMarkRequestDto dto) {
         String githubId = userDetails.getUsername();
         folderService.cancelBookmark(githubId, dto);
         return ApiResponseUtil.ok(
