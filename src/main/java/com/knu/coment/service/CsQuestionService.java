@@ -46,7 +46,6 @@ public class CsQuestionService {
         return projectCsQuestionRepository.findById(projectQuestionId)
                 .orElseThrow(() -> new QuestionExceptionHandler(QuestionErrorCode.NOT_FOUND_QUESTION));
     }
-    @Transactional(readOnly = true)
     public List<ProjectCsQuestion> createProjectQuestions(String githubId, Long projectId, String userCode, String userCodeFolderName) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         User user = userService.findByGithubId(githubId);

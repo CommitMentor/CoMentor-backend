@@ -29,7 +29,8 @@ public class ApiResponseUtil {
     }
 
     /* ───────── 오류 응답 ───────── */
-    public static <T> ResponseEntity<Api_Response<T>> error(ErrorCode ec) {   // 🔄 수정
+
+    public static <T> ResponseEntity<Api_Response<T>> error(ErrorCode ec) {
         return build(ec.getHttpStatus(), ec.getMessage(), null);
     }
 

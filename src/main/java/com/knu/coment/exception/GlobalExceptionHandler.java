@@ -1,7 +1,8 @@
 package com.knu.coment.exception;
 
-import com.knu.coment.global.code.CommonErrorCode;
+import com.knu.coment.exception.code.ErrorCode;
 import com.knu.coment.global.code.Api_Response;
+import com.knu.coment.global.code.CommonErrorCode;
 import com.knu.coment.util.ApiResponseUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -13,31 +14,34 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @ControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler {   // 상위 10줄만
 
-    /* ---------- 유틸 ---------- */
+    /* ── 스택트레이스 문자열 ── */
     private String trace(Throwable t) {
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));
         return sw.toString();
     }
 
-    /* ---------- 1) 비즈니스 예외 ---------- */
+    /* ── 1) 비즈니스 예외 ── */
     @ExceptionHandler(BusinessException.class)
-    protected ResponseEntity<Api_Response<Object>> handleBusiness(
+    public ResponseEntity<Api_Response<Object>> handleBusiness(
             BusinessException ex, HttpServletRequest req) {
 
-        var code = ex.getErrorCode();
+        ErrorCode code = ex.getErrorCode();
         log.warn("[BUSINESS] {} {} | {}", req.getMethod(), req.getRequestURI(), code.getMessage());
-        return ApiResponseUtil.error(code);
+
+        return ApiResponseUtil.error(code);          // ApiResponseUtil.error(ErrorCode)
     }
 
-    /* ---------- 2) 무결성 위반 ---------- */
+    /* ── 2) 무결성 위반 ── */
     @ExceptionHandler(DataIntegrityViolationException.class)
     protected ResponseEntity<Api_Response<Object>> handleIntegrity(DataIntegrityViolationException ex) {
 
@@ -50,7 +54,7 @@ public class GlobalExceptionHandler {
         return ApiResponseUtil.error(msg, CommonErrorCode.BAD_REQUEST.getHttpStatus());
     }
 
-    /* ---------- 3) DTO 검증 ---------- */
+    /* ── 3) DTO 검증 ── */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<Api_Response<Object>> handleValidation(MethodArgumentNotValidException ex) {
 
@@ -62,11 +66,17 @@ public class GlobalExceptionHandler {
         return ApiResponseUtil.error(msg, CommonErrorCode.BAD_REQUEST.getHttpStatus());
     }
 
-    /* ---------- 4) 그 밖의 예외 ---------- */
+    /* ── 4) 예상 밖 모든 예외 ── */
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<Api_Response<Object>> handleUnknown(Exception ex, HttpServletRequest req) {
 
         log.error("[UNEXPECTED] {} {}", req.getMethod(), req.getRequestURI(), ex);
-        return ApiResponseUtil.error(trace(ex), CommonErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus());
+        return ApiResponseUtil.error(firstLines(trace(ex),10), CommonErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus());
     }
+    private String firstLines(String trace, int lines) {
+        return Arrays.stream(trace.split("\\R"))
+                .limit(lines)
+                .collect(Collectors.joining(System.lineSeparator()));
+    }
+
 }
