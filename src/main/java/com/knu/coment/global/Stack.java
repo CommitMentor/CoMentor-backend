@@ -2,5 +2,6 @@ package com.knu.coment.global;
 
 public enum Stack {
     BACKEND,
-    FRONTEND
+    FRONTEND,
+    ANDROID_IOS
 }

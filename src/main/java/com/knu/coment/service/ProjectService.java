@@ -8,7 +8,6 @@ import com.knu.coment.entity.User;
 import com.knu.coment.exception.ProjectExceptionHandler;
 import com.knu.coment.exception.code.ProjectErrorCode;
 import com.knu.coment.global.Status;
-import com.knu.coment.repository.AnswerRepository;
 import com.knu.coment.repository.ProjectCsQuestionRepository;
 import com.knu.coment.repository.ProjectRepository;
 import com.knu.coment.repository.RepoRepository;
@@ -18,7 +17,6 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -29,7 +27,6 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final GithubRepoService githubRepoService;
     private final UserService userService;
-    private final AnswerRepository answerRepository;
     private final CsQuestionService cs;
     private final ProjectCsQuestionRepository projectCsQuestionRepository;
     private final RepoRepository repoRepository;

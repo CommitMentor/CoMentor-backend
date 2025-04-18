@@ -19,7 +19,7 @@ public class UserDto {
     @Schema(description = "알림 설정", example = "true")
     private boolean notification;
     @NotNull(message = "stackNames cannot be null")
-    @Schema(description = "사용자 스택 배열", example = "[\"FRONTEND\", \"BACKEND\"]")
+    @Schema(description = "사용자 스택 배열", example = "[\"FRONTEND\", \"BACKEND\", \"ANDROID_IOS\"]")
     private Set<@NotBlank(message = "stack name cannot be blank") String> stackNames;
     @Schema(description = "사용자 이미지", example = "https://``")
     private String avatarUrl;

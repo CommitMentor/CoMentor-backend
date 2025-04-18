@@ -92,9 +92,9 @@ public class FolderController {
     @PutMapping
     public ResponseEntity<?> updateFolderName(@AuthenticationPrincipal UserDetails userDetails,
                                               @RequestParam Long folderId,
-                                              @RequestParam String folderName) {
+                                              @RequestParam String fileName) {
         String githubId = userDetails.getUsername();
-        folderService.updateFolderName(githubId, folderId, folderName);
+        folderService.updateFolderName(githubId, folderId, fileName);
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.UPDATE_SUCCESS.getMessage());
     }

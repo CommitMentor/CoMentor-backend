@@ -35,18 +35,24 @@ public class CsQuestionService {
     private final ProjectCsQuestionRepository projectCsQuestionRepository;
     private final AnswerRepository answerRepository;
 
-    public ProjectCsQuestion findById(Long questionId) {
-        return projectCsQuestionRepository.findById(questionId)
+    private void validateProjectOwner(String githubId, Long projectId) {
+        User user = userService.findByGithubId(githubId);
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+        if (!project.getUserId().equals(user.getId())) {
+            throw new ProjectExceptionHandler(ProjectErrorCode.UNAUTHORIZED_ACCESS);
+        }
+    }
+    public ProjectCsQuestion findById(Long projectQuestionId) {
+        return projectCsQuestionRepository.findById(projectQuestionId)
                 .orElseThrow(() -> new QuestionExceptionHandler(QuestionErrorCode.NOT_FOUND_QUESTION));
     }
 
     public List<ProjectCsQuestion> createProjectQuestions(String githubId, Long projectId, String userCode, String userCodeFolderName) {
+        validateProjectOwner(githubId, projectId);
+        Project project = projectRepository.findById(projectId).orElseThrow();
         User user = userService.findByGithubId(githubId);
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
-
-        String projectInfo = String.format("Project description: %s, project role: %s",
-                project.getDescription(), project.getRole());
+        String projectInfo = String.format("Project description: %s, project role: %s", project.getDescription(), project.getRole());
         String prompt = gptService.createPromptForProject(userCode, projectInfo);
 
         String generatedQuestions = gptService.callGptApi(prompt);
@@ -96,7 +102,8 @@ public class CsQuestionService {
         return input;
     }
     public ProjectCsQuestionInfoResponse getCsQuestionDetail(String githubId, Long projectQuestionId) {
-        userService.findByGithubId(githubId);
+        ProjectCsQuestion question = findById(projectQuestionId);
+        validateProjectOwner(githubId, question.getProjectId());
         ProjectCsQuestion projectCsQuestion = findById(projectQuestionId);
         List<Answer> answers = answerRepository.findAllByProjectCsQuestionId(projectQuestionId);
         List<CreateFeedBackResponseDto> answerResponses = answers.stream()
@@ -119,7 +126,7 @@ public class CsQuestionService {
     }
 
     public List<CsQuestionListDto> getGroupedCsQuestions(String githubId, Long projectId) {
-        userService.findByGithubId(githubId);
+        validateProjectOwner(githubId, projectId);
         List<ProjectCsQuestion> questions = projectCsQuestionRepository.findAllByProjectId(projectId);
 
         return questions.stream()

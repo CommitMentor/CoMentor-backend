@@ -19,7 +19,7 @@ public enum ProjectErrorCode implements ErrorCode {
     MISSING_REQUIRED_FIELD(HttpStatus.BAD_REQUEST, "Required field is missing."),
 
     // 403
-    UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "You do not have permission to perform this action on the project."),
+    UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "해당 프로젝트의 권한이 없습니다"),
 
     // 500
     UPDATE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while updating the project information."),
