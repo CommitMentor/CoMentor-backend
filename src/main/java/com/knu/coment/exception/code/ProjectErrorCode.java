@@ -10,7 +10,7 @@ public enum ProjectErrorCode implements ErrorCode {
 
     // 404
     NOT_FOUND_PROJECT(HttpStatus.NOT_FOUND, "Project with the specified ID was not found."),
-    NOT_FOUND_Repo(HttpStatus.NOT_FOUND, "해당 레포를 찾을 수 없습니다"),
+    NOT_FOUND_REPO(HttpStatus.NOT_FOUND, "해당 레포를 찾을 수 없습니다"),
 
     // 400
     INVALID_PROJECT_ID(HttpStatus.BAD_REQUEST, "Invalid project ID provided."),

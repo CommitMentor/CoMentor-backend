@@ -102,7 +102,7 @@ public class ProjectService {
         Project project = findById(projectId);
         isProjectOwner(githubId, projectId);
         Repo repo = repoRepository.findById(project.getRepoId())
-                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_Repo));
+                .orElseThrow(() -> new ProjectExceptionHandler(ProjectErrorCode.NOT_FOUND_REPO));
         return DashBoardDto.fromEntity(project, repo);
     }
     public void deleteProject(String githubId, Long projectId) {

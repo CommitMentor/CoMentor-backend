@@ -48,4 +48,9 @@ public class ApiResponseUtil {
     public static <T> ResponseEntity<Api_Response<T>> createNotFoundResponse(String message) {
         return createResponse(CommonErrorCode.NOT_FOUND.getHttpStatus().value(), message, null);
     }
+    public static <T> ResponseEntity<Api_Response<T>> createErrorResponse(
+            String message, HttpStatus status) {
+
+        return createErrorResponse(message, status.value());
+    }
 }
