@@ -75,6 +75,7 @@ public class GptService {
         prompt.append("  \"DATABASES\",\n");
         prompt.append("  \"SECURITY\",\n");
         prompt.append("  \"LANGUAGE_AND_DEVELOPMENT_PRINCIPLES\",\n");
+        prompt.append("  \"ETC\"\n");
         prompt.append("]\n\n");
 
         prompt.append("출력 형식 (질문별 발췌 코드 포함):\n");

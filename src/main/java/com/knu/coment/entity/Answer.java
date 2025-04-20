@@ -24,12 +24,12 @@ public class Answer {
     @Enumerated(EnumType.STRING)
     private Author author;
 
-    private Long projectCsQuestionId;
+    private Long questionId;
 
-    public Answer(String content, LocalDateTime answeredAt, Author author, Long projectCsQuestionId) {
+    public Answer(String content, LocalDateTime answeredAt, Author author, Long questionId) {
         this.content = content;
         this.answeredAt = answeredAt;
         this.author = author;
-        this.projectCsQuestionId = projectCsQuestionId;
+        this.questionId = questionId;
     }
 }

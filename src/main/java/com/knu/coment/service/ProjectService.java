@@ -2,13 +2,13 @@ package com.knu.coment.service;
 
 import com.knu.coment.dto.project_repo.*;
 import com.knu.coment.entity.Project;
-import com.knu.coment.entity.ProjectCsQuestion;
+import com.knu.coment.entity.Question;
 import com.knu.coment.entity.Repo;
 import com.knu.coment.entity.User;
 import com.knu.coment.exception.ProjectException;
 import com.knu.coment.exception.code.ProjectErrorCode;
 import com.knu.coment.global.Status;
-import com.knu.coment.repository.ProjectCsQuestionRepository;
+import com.knu.coment.repository.QuestionRepository;
 import com.knu.coment.repository.ProjectRepository;
 import com.knu.coment.repository.RepoRepository;
 import com.knu.coment.util.PageResponse;
@@ -27,8 +27,8 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final GithubRepoService githubRepoService;
     private final UserService userService;
-    private final CsQuestionService cs;
-    private final ProjectCsQuestionRepository projectCsQuestionRepository;
+    private final ProjectQuestionService cs;
+    private final QuestionRepository questionRepository;
     private final RepoRepository repoRepository;
 
     public Project findById(Long projectId) {
@@ -110,9 +110,9 @@ public class ProjectService {
         findById(projectId);
         isProjectOwner(githubId, projectId);
 
-        List<ProjectCsQuestion> questionLinks = projectCsQuestionRepository.findAllByProjectId(projectId);
+        List<Question> questionLinks = questionRepository.findAllByProjectId(projectId);
 
-        for (ProjectCsQuestion link : questionLinks) {
+        for (Question link : questionLinks) {
             cs.deleteProjectCsQuestion(link.getId());
         }
 

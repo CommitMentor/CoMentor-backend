@@ -10,8 +10,9 @@ import com.knu.coment.exception.code.ProjectErrorCode;
 import com.knu.coment.exception.code.QuestionErrorCode;
 import com.knu.coment.global.CSCategory;
 import com.knu.coment.global.QuestionStatus;
+import com.knu.coment.global.QuestionType;
 import com.knu.coment.repository.AnswerRepository;
-import com.knu.coment.repository.ProjectCsQuestionRepository;
+import com.knu.coment.repository.QuestionRepository;
 import com.knu.coment.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,11 +29,11 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CsQuestionService {
+public class ProjectQuestionService {
     private final UserService userService;
     private final GptService gptService;
     private final ProjectRepository projectRepository;
-    private final ProjectCsQuestionRepository projectCsQuestionRepository;
+    private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
 
     private void validateProjectOwner(Long userId, Long projectId) {
@@ -42,11 +43,11 @@ public class CsQuestionService {
             throw new ProjectException(ProjectErrorCode.UNAUTHORIZED_ACCESS);
         }
     }
-    public ProjectCsQuestion findById(Long projectQuestionId) {
-        return projectCsQuestionRepository.findById(projectQuestionId)
+    public Question findById(Long projectQuestionId) {
+        return questionRepository.findById(projectQuestionId)
                 .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
     }
-    public List<ProjectCsQuestion> createProjectQuestions(String githubId, Long projectId, String userCode, String userCodeFolderName) {
+    public List<Question> createProjectQuestions(String githubId, Long projectId, String userCode, String userCodeFolderName) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         User user = userService.findByGithubId(githubId);
         validateProjectOwner(user.getId(), projectId);
@@ -57,7 +58,7 @@ public class CsQuestionService {
 
         generatedQuestions = stripCodeBlock(generatedQuestions);
 
-        List<ProjectCsQuestion> savedQuestions = new ArrayList<>();
+        List<Question> savedQuestions = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
@@ -69,8 +70,9 @@ public class CsQuestionService {
                 String csCategory = questionMap.get("category");
                 String relatedCode = questionMap.get("relatedCode");
                 if (questionText != null && !questionText.trim().isEmpty()) {
-                    ProjectCsQuestion projectCsQuestion = new ProjectCsQuestion(
+                    Question projectCsQuestion = new Question(
                             CSCategory.valueOf((csCategory).trim()),
+                            QuestionType.PROJECT,
                             relatedCode,
                             questionText.trim(),
                             LocalDateTime.now(),
@@ -80,7 +82,7 @@ public class CsQuestionService {
                             user.getId(),
                             project.getId()
                     );
-                    savedQuestions.add(projectCsQuestionRepository.save(projectCsQuestion));
+                    savedQuestions.add(questionRepository.save(projectCsQuestion));
                 }
             }
         } catch (Exception e) {
@@ -100,11 +102,11 @@ public class CsQuestionService {
         return input;
     }
     public ProjectCsQuestionInfoResponse getCsQuestionDetail(String githubId, Long projectQuestionId) {
-        ProjectCsQuestion question = findById(projectQuestionId);
+        Question question = findById(projectQuestionId);
         User user = userService.findByGithubId(githubId);
         validateProjectOwner(user.getId(), question.getProjectId());
-        ProjectCsQuestion projectCsQuestion = findById(projectQuestionId);
-        List<Answer> answers = answerRepository.findAllByProjectCsQuestionId(projectQuestionId);
+        Question projectCsQuestion = findById(projectQuestionId);
+        List<Answer> answers = answerRepository.findAllByQuestionId(projectQuestionId);
         List<CreateFeedBackResponseDto> answerResponses = answers.stream()
                 .sorted(Comparator.comparing(Answer::getAnsweredAt))
                 .map(answer -> new CreateFeedBackResponseDto(
@@ -127,7 +129,7 @@ public class CsQuestionService {
     public List<CsQuestionListDto> getGroupedCsQuestions(String githubId, Long projectId) {
         User user = userService.findByGithubId(githubId);
         validateProjectOwner(user.getId(), projectId);
-        List<ProjectCsQuestion> questions = projectCsQuestionRepository.findAllByProjectId(projectId);
+        List<Question> questions = questionRepository.findAllByProjectId(projectId);
 
         return questions.stream()
                 .collect(Collectors.groupingBy(q -> q.getCreateAt().toLocalDate()))
@@ -135,7 +137,7 @@ public class CsQuestionService {
                 .map(entry -> new CsQuestionListDto(
                         entry.getKey(),
                         entry.getValue().stream()
-                                .sorted(Comparator.comparing(ProjectCsQuestion::getId).reversed())
+                                .sorted(Comparator.comparing(Question::getId).reversed())
                                 .map(q -> new ProjectQuestionListDto(q.getId(), q.getQuestion(),q.getFolderName(), q.getQuestionStatus()))
                                 .collect(Collectors.toList())
                 ))
@@ -144,14 +146,14 @@ public class CsQuestionService {
     }
     @Transactional
     public void deleteProjectCsQuestion(Long projectCsQuestionId) {
-        ProjectCsQuestion projectCsQuestion = projectCsQuestionRepository.findById(projectCsQuestionId)
+       Question projectCsQuestion = questionRepository.findById(projectCsQuestionId)
                 .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
         Long csQuestionId = projectCsQuestion.getProjectId();
-        answerRepository.deleteAllByProjectCsQuestionId(projectCsQuestionId);
+        answerRepository.deleteAllByQuestionId(projectCsQuestionId);
 
-        projectCsQuestionRepository.deleteById(csQuestionId);
+        questionRepository.deleteById(csQuestionId);
 
-        projectCsQuestionRepository.deleteById(projectCsQuestionId);
+        questionRepository.deleteById(projectCsQuestionId);
     }
 
 }

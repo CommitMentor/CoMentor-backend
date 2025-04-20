@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface AnswerRepository extends JpaRepository<Answer, Long>{
-    List<Answer> findAllByProjectCsQuestionId(Long projectCsQuestionId);
-    void deleteAllByProjectCsQuestionId(Long projectCsQuestionId);
+    List<Answer> findAllByQuestionId(Long projectCsQuestionId);
+    void deleteAllByQuestionId(Long projectCsQuestionId);
 }

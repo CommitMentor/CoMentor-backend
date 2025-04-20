@@ -3,13 +3,15 @@ package com.knu.coment.service;
 import com.knu.coment.dto.BookMarkRequestDto;
 import com.knu.coment.dto.FolderCsQuestionListDto;
 import com.knu.coment.dto.FolderListDto;
-import com.knu.coment.entity.ProjectCsQuestion;
-import com.knu.coment.entity.Folder;
-import com.knu.coment.entity.User;
+import com.knu.coment.entity.*;
 import com.knu.coment.exception.FolderException;
+import com.knu.coment.exception.ProjectException;
 import com.knu.coment.exception.code.FolderErrorCode;
-import com.knu.coment.repository.ProjectCsQuestionRepository;
+import com.knu.coment.exception.code.ProjectErrorCode;
+import com.knu.coment.repository.ProjectRepository;
+import com.knu.coment.repository.QuestionRepository;
 import com.knu.coment.repository.FolderRepository;
+import com.knu.coment.repository.RepoRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +24,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class FolderService {
     private final UserService userService;
-    private final ProjectCsQuestionRepository projectCsQuestionRepository;
-    private final CsQuestionService csQuestionService;
+    private final QuestionRepository questionRepository;
+    private final ProjectQuestionService projectQuestionService;
     private final FolderRepository folderRepository;
+    private final RepoRepository repoRepository;
+    private ProjectRepository pro;
 
     public List<FolderListDto> getFolderList(String githubId) {
         User user = userService.findByGithubId(githubId);
@@ -40,15 +44,23 @@ public class FolderService {
         Folder folder = folderRepository.findByUserIdAndId(user.getId(), folderId)
                 .orElseThrow(() -> new FolderException(FolderErrorCode.NOT_FOUND_FOLDER));
 
-        List<ProjectCsQuestion> questions = projectCsQuestionRepository.findAllByFolderId(folderId);
+        List<Question> questions = questionRepository.findAllByFolderId(folderId);
 
         return questions.stream()
-                .map(q -> new FolderCsQuestionListDto(
-                        folder.getFileName(),
-                        q.getId(),
-                        q.getQuestion(),
-                        q.getQuestionStatus()
-                ))
+                .map(q -> {
+                    Project project = pro.findById(q.getProjectId())
+                            .orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
+                    Repo repo = repoRepository.findById(project.getRepoId())
+                            .orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_REPO));
+                    return new FolderCsQuestionListDto(
+                            q.getId(),
+                            q.getQuestion(),
+                            repo.getName(),
+                            folder.getFileName(),
+                            q.getCsCategory(),
+                            q.getQuestionStatus()
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
@@ -65,9 +77,9 @@ public class FolderService {
         Folder folder = folderRepository.findByUserIdAndFileName(user.getId(), folderName)
                 .orElseGet(() -> folderRepository.save(new Folder(folderName, user.getId())));
 
-        ProjectCsQuestion question = csQuestionService.findById(dto.getCsQuestionId());
+        Question question = projectQuestionService.findById(dto.getCsQuestionId());
         question.bookMark(folder.getId());
-        projectCsQuestionRepository.save(question);
+        questionRepository.save(question);
     }
 
     @Transactional
@@ -78,13 +90,13 @@ public class FolderService {
         Folder folder = folderRepository.findByUserIdAndFileName(user.getId(), cleanName)
                 .orElseThrow(() -> new FolderException(FolderErrorCode.NOT_FOUND_FOLDER));
 
-        ProjectCsQuestion projectCsQuestion = csQuestionService.findById(dto.getCsQuestionId());
+        Question projectCsQuestion = projectQuestionService.findById(dto.getCsQuestionId());
 
         if (projectCsQuestion.getFolderId() == null || !projectCsQuestion.getFolderId().equals(folder.getId())) {
             throw new FolderException(FolderErrorCode.BAD_REQUEST);
         }
         projectCsQuestion.unBookMark();
-        projectCsQuestionRepository.save(projectCsQuestion);
+        questionRepository.save(projectCsQuestion);
     }
     @Transactional
     public void updateFolderName(String githubId, Long folderId, String newFileName) {
@@ -110,10 +122,10 @@ public class FolderService {
         User user = userService.findByGithubId(githubId);
         Folder folder = folderRepository.findByUserIdAndId(user.getId(), folderId)
                 .orElseThrow(() -> new FolderException(FolderErrorCode.NOT_FOUND_FOLDER));
-        List<ProjectCsQuestion> questions = projectCsQuestionRepository.findAllByFolderId(folderId);
-        for (ProjectCsQuestion question : questions) {
+        List<Question> questions = questionRepository.findAllByFolderId(folderId);
+        for (Question question : questions) {
             question.unBookMark();
-            projectCsQuestionRepository.save(question);
+            questionRepository.save(question);
         }
 
         folderRepository.delete(folder);

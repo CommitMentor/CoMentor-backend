@@ -8,8 +8,8 @@ import com.knu.coment.exception.FolderException;
 import com.knu.coment.exception.code.FolderErrorCode;
 import com.knu.coment.global.Role;
 import com.knu.coment.repository.FolderRepository;
-import com.knu.coment.repository.ProjectCsQuestionRepository;
-import com.knu.coment.service.CsQuestionService;
+import com.knu.coment.repository.QuestionRepository;
+import com.knu.coment.service.ProjectQuestionService;
 import com.knu.coment.service.FolderService;
 import com.knu.coment.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,8 +30,8 @@ import static org.mockito.Mockito.*;
 public class FolderServiceTest {
 
     @Mock private UserService userService;
-    @Mock private ProjectCsQuestionRepository projectCsQuestionRepository;
-    @Mock private CsQuestionService csQuestionService;
+    @Mock private QuestionRepository questionRepository;
+    @Mock private ProjectQuestionService projectQuestionService;
     @Mock private FolderRepository folderRepository;
 
     @InjectMocks private FolderService folderService;
