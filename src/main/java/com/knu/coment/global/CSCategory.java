@@ -6,7 +6,8 @@ public enum CSCategory {
     NETWORKING("Networking"),
     DATABASES("Databases"),
     SECURITY("Security"),
-    LANGUAGE_AND_DEVELOPMENT_PRINCIPLES("Language and Development Principles");
+    LANGUAGE_AND_DEVELOPMENT_PRINCIPLES("Language and Development Principles"),
+    ETC("Etc");
 
 
     private final String label;

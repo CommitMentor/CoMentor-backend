@@ -2,6 +2,8 @@ package com.knu.coment.entity;
 
 import com.knu.coment.global.CSCategory;
 import com.knu.coment.global.QuestionStatus;
+import com.knu.coment.global.QuestionType;
+import com.knu.coment.global.Stack;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor
-public class ProjectCsQuestion {
+public class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,14 +35,21 @@ public class ProjectCsQuestion {
     @Enumerated(EnumType.STRING)
     private QuestionStatus questionStatus;
 
+    @Enumerated(EnumType.STRING)
+    private QuestionType questionType;
+
+    @Enumerated(EnumType.STRING)
+    private Stack stack;
+
     private String folderName;
 
     private Long userId;
     private Long projectId;
     private Long folderId;
 
-    public ProjectCsQuestion(CSCategory csCategory, String relatedCode, String question, LocalDateTime createAt, QuestionStatus questionStatus, String folderName, Long folderId, Long userId, Long projectId) {
+    public Question(CSCategory csCategory, QuestionType questionType, String relatedCode, String question, LocalDateTime createAt, QuestionStatus questionStatus, String folderName, Long folderId, Long userId, Long projectId) {
         this.csCategory = csCategory;
+        this.questionType = questionType;
         this.relatedCode = relatedCode;
         this.question = question;
         this.createAt = createAt;

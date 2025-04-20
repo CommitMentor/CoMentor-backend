@@ -1,6 +1,5 @@
 package com.knu.coment.exception;
 
-import com.knu.coment.global.code.CommonErrorCode;
 import com.knu.coment.exception.code.ErrorCode;
 import lombok.Getter;
 
@@ -8,14 +7,13 @@ import lombok.Getter;
 @Getter
 public abstract class BusinessException extends RuntimeException {
 
-    private final ErrorCode  errorCode;   // ✅ enum 타입 고정
+    private final ErrorCode  errorCode;
 
     protected BusinessException(ErrorCode  code) {
         super(code.getMessage());
         this.errorCode = code;
     }
 
-    /** 공통 인터페이스 반환용 */
     public ErrorCode getErrorCode() {
         return errorCode;
     }

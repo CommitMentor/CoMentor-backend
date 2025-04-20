@@ -1,17 +1,18 @@
-package com.knu.coment.dto;
+package com.knu.coment.dto.cs;
 
+import com.knu.coment.entity.Question;
 import com.knu.coment.global.CSCategory;
-import com.knu.coment.global.QuestionStatus;
+import com.knu.coment.global.Stack;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class FolderCsQuestionListDto {
+public class QuestionListDto {
     private Long questionId;
     private String question;
-    private String repoName;
-    private String fileName;
+    private Stack stack;
     private CSCategory csCategory;
-    private QuestionStatus questionStatus;
+
+
 }
