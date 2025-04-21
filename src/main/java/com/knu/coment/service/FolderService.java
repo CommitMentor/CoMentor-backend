@@ -41,7 +41,7 @@ public class FolderService {
     @Transactional(readOnly = true)
     public List<FolderCsQuestionListDto> getFolderQuestions(String githubId, Long folderId) {
         User user = userService.findByGithubId(githubId);
-        Folder folder = folderRepository.findByUserIdAndId(user.getId(), folderId)
+        folderRepository.findByUserIdAndId(user.getId(), folderId)
                 .orElseThrow(() -> new FolderException(FolderErrorCode.NOT_FOUND_FOLDER));
 
         List<Question> questions = questionRepository.findAllByFolderId(folderId);
@@ -54,9 +54,10 @@ public class FolderService {
                             .orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_REPO));
                     return new FolderCsQuestionListDto(
                             q.getId(),
+                            q.getProjectId(),
                             q.getQuestion(),
                             repo.getName(),
-                            folder.getFileName(),
+                            q.getFolderName(),
                             q.getCsCategory(),
                             q.getQuestionStatus()
                     );

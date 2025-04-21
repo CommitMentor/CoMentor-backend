@@ -9,6 +9,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class FolderCsQuestionListDto {
     private Long questionId;
+    private Long projectId;
     private String question;
     private String repoName;
     private String fileName;
