@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knu.coment.entity.Answer;
 import com.knu.coment.entity.Question;
 import com.knu.coment.entity.User;
+import com.knu.coment.entity.UserCSQuestion;
 import com.knu.coment.exception.AnswerException;
 import com.knu.coment.exception.QuestionException;
 import com.knu.coment.exception.code.AnswerErrorCode;
@@ -12,6 +13,7 @@ import com.knu.coment.exception.code.QuestionErrorCode;
 import com.knu.coment.global.Author;
 import com.knu.coment.global.QuestionStatus;
 import com.knu.coment.repository.AnswerRepository;
+import com.knu.coment.repository.UserCSQuestionRepository;
 import com.knu.coment.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +30,41 @@ public class AnswerService {
     private final QuestionRepository questionRepository;
     private final UserService userService;
     private final GptService gptService;
+    private final UserCSQuestionRepository userCSQuestionRepository;
 
+    public Answer createCSAnswer(String githubId, Long userCSQuestionId, String answer) {
+        User user = userService.findByGithubId(githubId);
+        UserCSQuestion userCSQuestion = userCSQuestionRepository.findByIdAndUserId(userCSQuestionId, user.getId())
+                .orElseThrow(() -> new AnswerException(AnswerErrorCode.NOT_RECOMMENDED_QUESTION));
+        if (userCSQuestion.getQuestionStatus() == QuestionStatus.DONE) {
+            throw new AnswerException(AnswerErrorCode.ALREADY_DONE_ANSWER);
+        }
+        Long questionId = userCSQuestion.getQuestionId();
+        Question projectCsQuestion = questionRepository.findById(questionId)
+                .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
+        if(answerRepository.findByUserIdAndQuestionId(user.getId(), questionId).isPresent()) {
+            throw new AnswerException(AnswerErrorCode.ALREADY_DONE_ANSWER);
+        }
+        Answer newAnswer = new Answer(
+                answer,
+                LocalDateTime.now(),
+                Author.USER,
+                questionId,
+                user.getId()
+        );
+        answerRepository.save(newAnswer);
+        String prompt = gptService.createPromptForAnswerCS(projectCsQuestion.getCsCategory(),projectCsQuestion.getQuestion(), answer);
+        String generatedAnswer = gptService.callGptApi(prompt);
+        generatedAnswer = getFeedback(generatedAnswer);
+        Answer newFeedback = new Answer(
+                generatedAnswer,
+                LocalDateTime.now(),
+                Author.AI,
+                questionId,
+                user.getId()
+        );
+        return answerRepository.save(newFeedback);
+    }
     public Answer createAnswer(String githubId, Long csQuestionId, String answer) {
         User user = userService.findByGithubId(githubId);
         Question projectCsQuestion = questionRepository.findById(csQuestionId)
@@ -44,7 +80,8 @@ public class AnswerService {
                 answer,
                 LocalDateTime.now(),
                 Author.USER,
-                csQuestionId
+                csQuestionId,
+                null
         );
         answerRepository.save(newAnswer);
         projectCsQuestion.markAsDone();
@@ -56,7 +93,8 @@ public class AnswerService {
                 generatedAnswer,
                 LocalDateTime.now(),
                 Author.AI,
-                csQuestionId
+                csQuestionId,
+                null
         );
         return answerRepository.save(newFeedback);
     }

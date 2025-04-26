@@ -25,11 +25,13 @@ public class Answer {
     private Author author;
 
     private Long questionId;
+    private Long userId;
 
-    public Answer(String content, LocalDateTime answeredAt, Author author, Long questionId) {
+    public Answer(String content, LocalDateTime answeredAt, Author author, Long questionId, Long userId) {
         this.content = content;
         this.answeredAt = answeredAt;
         this.author = author;
         this.questionId = questionId;
+        this.userId = userId;
     }
 }
