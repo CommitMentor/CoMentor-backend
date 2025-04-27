@@ -42,9 +42,6 @@ public class AnswerService {
         Long questionId = userCSQuestion.getQuestionId();
         Question projectCsQuestion = questionRepository.findById(questionId)
                 .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
-        if(answerRepository.findByUserIdAndQuestionId(user.getId(), questionId).isPresent()) {
-            throw new AnswerException(AnswerErrorCode.ALREADY_DONE_ANSWER);
-        }
         Answer newAnswer = new Answer(
                 answer,
                 LocalDateTime.now(),
@@ -53,6 +50,8 @@ public class AnswerService {
                 user.getId()
         );
         answerRepository.save(newAnswer);
+        userCSQuestion.markAsDone();
+        userCSQuestionRepository.save(userCSQuestion);
         String prompt = gptService.createPromptForAnswerCS(projectCsQuestion.getCsCategory(),projectCsQuestion.getQuestion(), answer);
         String generatedAnswer = gptService.callGptApi(prompt);
         generatedAnswer = getFeedback(generatedAnswer);

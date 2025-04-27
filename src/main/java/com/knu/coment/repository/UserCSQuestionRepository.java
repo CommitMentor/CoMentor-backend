@@ -27,6 +27,6 @@ public interface UserCSQuestionRepository extends JpaRepository<UserCSQuestion, 
       and ucq.questionStatus = 'DONE'
 """)
     List<Long> findSolvedQuestionIdsByUserId(@Param("userId") Long userId);
-
+    List<UserCSQuestion> findAllByUserIdAndFolderId(Long userId, Long folderId);
 }
 

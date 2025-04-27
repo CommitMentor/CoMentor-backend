@@ -1,10 +1,7 @@
 package com.knu.coment.entity;
 
 import com.knu.coment.global.QuestionStatus;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -20,7 +17,9 @@ public class UserCSQuestion {
     private Long userId;
     private Long questionId;
     private LocalDate date;
+    @Enumerated(EnumType.STRING)
     private QuestionStatus questionStatus;
+    private Long folderId;
 
     public UserCSQuestion(Long userId, Long questionId, LocalDate date, QuestionStatus questionStatus) {
         this.userId = userId;
@@ -33,4 +32,10 @@ public class UserCSQuestion {
         this.questionStatus = QuestionStatus.DONE;
     }
 
+    public void bookMark(Long folderId) {
+        this.folderId = folderId;
+    }
+    public void unBookMark() {
+        this.folderId = null;
+    }
 }

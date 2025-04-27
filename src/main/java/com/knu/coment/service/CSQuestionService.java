@@ -1,12 +1,16 @@
 package com.knu.coment.service;
 
 import com.knu.coment.dto.cs.CSDashboard;
+import com.knu.coment.dto.cs.CSQuestionInfoResponse;
 import com.knu.coment.dto.cs.QuestionListDto;
+import com.knu.coment.dto.gpt.CreateFeedBackResponseDto;
+import com.knu.coment.entity.Answer;
 import com.knu.coment.entity.UserCSQuestion;
 import com.knu.coment.entity.Question;
 import com.knu.coment.entity.User;
 import com.knu.coment.exception.QuestionException;
 import com.knu.coment.exception.code.QuestionErrorCode;
+import com.knu.coment.repository.AnswerRepository;
 import com.knu.coment.repository.UserCSQuestionRepository;
 import com.knu.coment.repository.QuestionRepository;
 import com.knu.coment.util.PageResponse;
@@ -25,6 +29,7 @@ public class CSQuestionService {
     private final UserService userService;
     private final QuestionRepository questionRepository;
     private final UserCSQuestionRepository userCSQuestionRepository;
+    private final AnswerRepository answerRepository;
 
     @Transactional(readOnly = true)
     public PageResponse<CSDashboard> getDashboard(String githubId, int page) {
@@ -67,6 +72,30 @@ public class CSQuestionService {
                 q.getStack(),
                 q.getCsCategory(),
                 uq.getQuestionStatus()
+        );
+    }
+    public CSQuestionInfoResponse getCSQuestionDetail(String githubId, Long csQuestionId) {
+        User user = userService.findByGithubId(githubId);
+        UserCSQuestion userCSQuestion = userCSQuestionRepository.findByIdAndUserId(csQuestionId, user.getId())
+                .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
+        Question question = questionRepository.findById(userCSQuestion.getQuestionId())
+                .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
+        List<Answer> answers = answerRepository.findAllByUserIdAndQuestionId(user.getId(), question.getId());
+        List<CreateFeedBackResponseDto> answerResponses = answers.stream()
+                .sorted(Comparator.comparing(Answer::getAnsweredAt))
+                .map(answer -> new CreateFeedBackResponseDto(
+                        answer.getContent(),
+                        answer.getAuthor().name()
+                ))
+                .collect(Collectors.toList());
+
+        return new CSQuestionInfoResponse(
+                userCSQuestion.getId(),
+                question.getQuestion(),
+                userCSQuestion.getQuestionStatus(),
+                question.getStack(),
+                question.getCsCategory(),
+                answerResponses
         );
     }
 

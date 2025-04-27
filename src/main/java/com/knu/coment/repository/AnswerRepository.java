@@ -17,5 +17,5 @@ import java.util.Optional;
 public interface AnswerRepository extends JpaRepository<Answer, Long>{
     List<Answer> findAllByQuestionId(Long projectCsQuestionId);
     void deleteAllByQuestionId(Long projectCsQuestionId);
-    Optional<Answer> findByUserIdAndQuestionId(Long userId, Long questionId);
+    List<Answer> findAllByUserIdAndQuestionId(Long userId, Long questionId);
 }
