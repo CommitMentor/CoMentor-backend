@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AnswerController {
     private final AnswerService answerService;
 
-    @Operation(summary = "피드백 생성", description = "피드백을 생성합니다.")
+    @Operation(summary = "프로젝트 CS 피드백 생성", description = "프로젝트 피드백을 생성합니다.")
     @PostMapping
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "피드백 생성 성공"),
@@ -47,4 +47,29 @@ public class AnswerController {
                 newFeedback.getContent()
         );
     }
+
+    @Operation(summary = "CS 피드백 생성", description = "CS 피드백을 생성합니다.")
+    @PostMapping("/CS")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "CS 피드백 생성 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "404", description = "CS 피드백 생성 실패"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    public ResponseEntity<?> createCSFeedback(@AuthenticationPrincipal UserDetails userDetails,
+                                           @RequestBody FeedBackRequestDto feedbackDto){
+        String githubId = userDetails.getUsername();
+        Answer newFeedback = answerService.createCSAnswer(
+                githubId,
+                feedbackDto.getCsQuestionId(),
+                feedbackDto.getAnswer()
+        );
+
+        return ApiResponseUtil.ok(
+                SuccessCode.INSERT_SUCCESS.getMessage(),
+                newFeedback.getContent()
+        );
+    }
+
+
 }
