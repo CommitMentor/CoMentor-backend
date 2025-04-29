@@ -28,10 +28,11 @@ public class DailyQuestionScheduler {
     private final UserStackRepository userStackRepository;
     private final AnswerRepository answerRepository;
 
-//    @PostConstruct
-//    public void init() {
-//        generateDailyQuestions(); // 애플리케이션 시작 시 실행
-//    }
+    @PostConstruct
+    public void init() {
+        generateDailyQuestions(); // 애플리케이션 시작 시 실행
+    }
+
 
     @Scheduled(cron = "0 0 10 * * *", zone = "Asia/Seoul")
     @Transactional
@@ -45,7 +46,7 @@ public class DailyQuestionScheduler {
 
             List<Stack> stacks = userStackRepository.findStacksByUserId(user.getId());
             if (stacks.isEmpty()) {
-                //log.info("유저 {} 는 스택이 없어 추천할 수 없습니다.", user.getId());
+                log.info("유저 {} 는 스택이 없어 추천할 수 없습니다.", user.getId());
                 continue;
             }
 
@@ -68,7 +69,7 @@ public class DailyQuestionScheduler {
 
 
             if (recommended.isEmpty()) {
-                //log.info("유저 {} 에게 추천할 문제가 없습니다.", user.getId());
+                log.info("유저 {} 에게 추천할 문제가 없습니다.", user.getId());
                 continue;
             }
 
@@ -77,7 +78,7 @@ public class DailyQuestionScheduler {
                     .toList();
 
             userCSQuestionRepository.saveAll(UserCSQuestions);
-            //log.info("유저 {} 에게 {}개의 문제를 추천 완료했습니다.", user.getId(), UserCSQuestions.size());
+            log.info("유저 {} 에게 {}개의 문제를 추천 완료했습니다.", user.getId(), UserCSQuestions.size());
         }
     }
 }
