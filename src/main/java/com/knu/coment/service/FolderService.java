@@ -60,8 +60,9 @@ public class FolderService {
                                     .orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_REPO));
 
                             return new FolderCsQuestionListDto(
-                                    null,
                                     q.getId(),
+                                    null,
+                                    q.getProjectId(),
                                     q.getQuestion(),
                                     repo.getName(),
                                     q.getFolderName(),
@@ -89,6 +90,7 @@ public class FolderService {
                                         .orElseThrow(() -> new FolderException(QuestionErrorCode.NOT_FOUND_QUESTION));
 
                                 return new FolderCsQuestionListDto(
+                                        null,
                                         uq.getId(),
                                         null,
                                         question.getQuestion(),
@@ -141,7 +143,7 @@ public class FolderService {
         Folder folder = folderRepository.findByUserIdAndFileName(user.getId(), cleanName)
                 .orElseThrow(() -> new FolderException(FolderErrorCode.NOT_FOUND_FOLDER));
 
-        if (dto.getCsQuestionId() != null) { // UserCSQuestion 북마크 취소
+        if (dto.getCsQuestionId() != null) {
             UserCSQuestion userCSQuestion = userCSQuestionRepository.findById(dto.getCsQuestionId())
                     .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
             if (!folder.getId().equals(userCSQuestion.getFolderId())) {
@@ -149,7 +151,7 @@ public class FolderService {
             }
             userCSQuestion.unBookMark();
             userCSQuestionRepository.save(userCSQuestion);
-        } else if (dto.getQuestionId() != null) { // 일반 Question 북마크 취소
+        } else if (dto.getQuestionId() != null) {
             Question question = projectQuestionService.findById(dto.getQuestionId());
             if (!folder.getId().equals(question.getFolderId())) {
                 throw new FolderException(FolderErrorCode.BAD_REQUEST);
