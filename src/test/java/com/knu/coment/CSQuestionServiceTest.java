@@ -86,11 +86,13 @@ class CSQuestionServiceTest {
         Page<UserCSQuestion> userCSPage = new PageImpl<>(List.of(userCSQuestion), pageable, 1);
 
         when(userService.findByGithubId("testUser")).thenReturn(user);
-        when(userCSQuestionRepository.findAllByUserId(user.getId(), pageable)).thenReturn(userCSPage);
+        when(userCSQuestionRepository.findByUserIdAndCategory(user.getId(), CSCategory.DATABASES, pageable))
+                .thenReturn(userCSPage);
         when(questionRepository.findById(userCSQuestion.getQuestionId())).thenReturn(Optional.of(question));
 
+
         // when
-        PageResponse<CSDashboard> response = csQuestionService.getDashboard("testUser", 0);
+        PageResponse<CSDashboard> response = csQuestionService.getDashboard("testUser", 0, CSCategory.DATABASES);
 
         // then
         assertThat(response.getContent()).hasSize(1);
@@ -123,11 +125,11 @@ class CSQuestionServiceTest {
         // given
         Pageable pageable = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "date"));
         when(userService.findByGithubId("testUser")).thenReturn(user);
-        when(userCSQuestionRepository.findAllByUserId(user.getId(), pageable))
+        when(userCSQuestionRepository.findByUserIdAndCategory(user.getId(), CSCategory.DATABASES, pageable))
                 .thenReturn(Page.empty(pageable));
 
         // when
-        PageResponse<CSDashboard> response = csQuestionService.getDashboard("testUser", 0);
+        PageResponse<CSDashboard> response = csQuestionService.getDashboard("testUser", 0, CSCategory.DATABASES);
 
         // then
         assertThat(response.getContent()).isEmpty();

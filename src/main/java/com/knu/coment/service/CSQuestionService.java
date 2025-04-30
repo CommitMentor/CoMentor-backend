@@ -10,6 +10,7 @@ import com.knu.coment.entity.Question;
 import com.knu.coment.entity.User;
 import com.knu.coment.exception.QuestionException;
 import com.knu.coment.exception.code.QuestionErrorCode;
+import com.knu.coment.global.CSCategory;
 import com.knu.coment.repository.AnswerRepository;
 import com.knu.coment.repository.UserCSQuestionRepository;
 import com.knu.coment.repository.QuestionRepository;
@@ -32,11 +33,15 @@ public class CSQuestionService {
     private final AnswerRepository answerRepository;
 
     @Transactional(readOnly = true)
-    public PageResponse<CSDashboard> getDashboard(String githubId, int page) {
+    public PageResponse<CSDashboard> getDashboard(String githubId, int page, CSCategory csCategory) {
         User user = userService.findByGithubId(githubId);
         Pageable pageable = PageRequest.of(page, 8, Sort.by(Sort.Direction.DESC, "date"));
 
-        Page<UserCSQuestion> userCSPage = userCSQuestionRepository.findAllByUserId(user.getId(), pageable);
+
+        Page<UserCSQuestion> userCSPage = (csCategory != null)
+                ? userCSQuestionRepository.findByUserIdAndCategory(user.getId(), csCategory, pageable)
+                : userCSQuestionRepository.findAllByUserId(user.getId(), pageable);
+
         if (userCSPage.isEmpty()) {
             return new PageResponse<>(Page.empty(pageable));
         }

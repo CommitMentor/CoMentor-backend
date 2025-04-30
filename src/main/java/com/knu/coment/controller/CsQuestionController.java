@@ -2,6 +2,7 @@ package com.knu.coment.controller;
 
 import com.knu.coment.dto.cs.CSDashboard;
 import com.knu.coment.dto.cs.CSQuestionInfoResponse;
+import com.knu.coment.global.CSCategory;
 import com.knu.coment.global.code.Api_Response;
 import com.knu.coment.global.code.SuccessCode;
 import com.knu.coment.service.CSQuestionService;
@@ -37,16 +38,17 @@ public class CsQuestionController {
     })
     public ResponseEntity<Api_Response<PageResponse<CSDashboard>>> getQuestionList(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam int page) {
+            @RequestParam int page,
+            @RequestParam(required = false) CSCategory csCategory) {
         String githubId = userDetails.getUsername();
-        PageResponse<CSDashboard> csDashboard =csQuestionService.getDashboard(githubId,page);
+        PageResponse<CSDashboard> csDashboard =csQuestionService.getDashboard(githubId,page, csCategory);
         return ApiResponseUtil.ok(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 csDashboard
         );
     }
     @Operation(summary = "CS 질문 상세 조회", description = "CS 질문 상세 조회 API입니다")
-    @GetMapping("/")
+    @GetMapping()
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "CS 질문 상세 조회 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청"),

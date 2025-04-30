@@ -46,8 +46,8 @@ public class SecurityConfig {
 
                 .cors(cors -> {
                     CorsConfiguration configuration = new CorsConfiguration();
-                    configuration.setAllowedOrigins(Arrays.asList("https://comentor.store", "http://localhost:3000", "http://localhost:8080"));
-                    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+                    configuration.setAllowedOrigins(Arrays.asList("https://comentor.store", "http://localhost:3000", "http://localhost:8080","https://comentor.vercel.app"));
+                    configuration.setAllowedMethods(Arrays.asList("*"));
                     configuration.setAllowedHeaders(Arrays.asList("*"));
                     configuration.setAllowCredentials(true);
                     configuration.setMaxAge(3600L);

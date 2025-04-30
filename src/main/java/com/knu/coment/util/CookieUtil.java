@@ -20,7 +20,7 @@ public class CookieUtil {
                     .path("/")
                     .maxAge(maxAge)
                     .secure(true)
-                    .domain("comentor")
+                    .domain("comentor.store")
                     .sameSite("None")
                     .httpOnly(false)
                     .build();

@@ -26,12 +26,11 @@ public class DailyQuestionScheduler {
     private final QuestionRepository questionRepository;
     private final UserCSQuestionRepository userCSQuestionRepository;
     private final UserStackRepository userStackRepository;
-    private final AnswerRepository answerRepository;
 
-    @PostConstruct
-    public void init() {
-        generateDailyQuestions(); // 애플리케이션 시작 시 실행
-    }
+//    @PostConstruct
+//    public void init() {
+//        generateDailyQuestions(); // 애플리케이션 시작 시 실행
+//    }
 
 
     @Scheduled(cron = "0 0 10 * * *", zone = "Asia/Seoul")
@@ -55,18 +54,18 @@ public class DailyQuestionScheduler {
                     .toList();
 
             int slotPerStack = (int) Math.ceil(4.0 / stackNames.size());
-            List<Long> alreadySolvedQuestionIds = userCSQuestionRepository.findSolvedQuestionIdsByUserId(user.getId());
+
+            List<Long> excludedQuestionIds = userCSQuestionRepository.findAllQuestionIdsByUserId(user.getId());
             List<Question> recommended;
-            if (alreadySolvedQuestionIds.isEmpty()) {
-                recommended = questionRepository.findBalancedUnansweredWithoutExclude(
-                        stackNames, slotPerStack, 4, user.getId()
+            if (excludedQuestionIds.isEmpty()) {
+                recommended = questionRepository.findBalancedUnreceivedWithoutExclude(
+                        stackNames, slotPerStack, 4
                 );
             } else {
-                recommended = questionRepository.findBalancedUnanswered(
-                        stackNames, slotPerStack, 4, alreadySolvedQuestionIds, user.getId()
+                recommended = questionRepository.findBalancedUnreceived(
+                        stackNames, slotPerStack, 4, excludedQuestionIds
                 );
             }
-
 
             if (recommended.isEmpty()) {
                 log.info("유저 {} 에게 추천할 문제가 없습니다.", user.getId());
