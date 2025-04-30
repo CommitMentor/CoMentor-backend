@@ -14,3 +14,7 @@ spring:
 logging:
     level:
         org.springframework.security: DEBUG
+
+#springdoc:
+#  swagger-ui:
+#    persistAuthorization: true

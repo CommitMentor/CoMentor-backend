@@ -1,6 +1,7 @@
 package com.knu.coment.repository;
 
 import com.knu.coment.entity.UserCSQuestion;
+import com.knu.coment.global.CSCategory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,5 +29,17 @@ public interface UserCSQuestionRepository extends JpaRepository<UserCSQuestion, 
 """)
     List<Long> findSolvedQuestionIdsByUserId(@Param("userId") Long userId);
     List<UserCSQuestion> findAllByUserIdAndFolderId(Long userId, Long folderId);
+
+    @Query("SELECT ucq FROM UserCSQuestion ucq " +
+            "JOIN Question q ON ucq.questionId = q.id " +
+            "WHERE ucq.userId = :userId AND q.csCategory = :category")
+    Page<UserCSQuestion> findByUserIdAndCategory(@Param("userId") Long userId,
+                                                 @Param("category") CSCategory category,
+                                                 Pageable pageable);
+
+    @Query("SELECT ucq.questionId FROM UserCSQuestion ucq WHERE ucq.userId = :userId")
+    List<Long> findAllQuestionIdsByUserId(@Param("userId") Long userId);
+
+
 }
 
