@@ -17,10 +17,12 @@ import com.knu.coment.repository.UserCSQuestionRepository;
 import com.knu.coment.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 @Service
 @RequiredArgsConstructor
@@ -97,19 +99,88 @@ public class AnswerService {
         );
         return answerRepository.save(newFeedback);
     }
-    private String getFeedback(String input){
-        String feedback = "";
+    @Transactional
+    public Answer retryCsAnswer(String githubId, Long userCSQuestionId, String newAnswer) {
+        User user = userService.findByGithubId(githubId);
+
+        UserCSQuestion ucq = userCSQuestionRepository
+                .findByIdAndUserId(userCSQuestionId, user.getId())
+                .orElseThrow(() -> new AnswerException(AnswerErrorCode.NOT_RECOMMENDED_QUESTION));
+        Question question = questionRepository.findById(ucq.getQuestionId())
+                .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
+
+        return resolveAndSave(
+                question,
+                user.getId(),
+                newAnswer,
+                (q, ans) -> gptService.createPromptForAnswerCS(q.getCsCategory(), q.getQuestion(), ans)
+        );
+    }
+
+    @Transactional
+    public Answer retryProjectAnswer(String githubId, Long csQuestionId, String newAnswer) {
+
+        User user = userService.findByGithubId(githubId);
+
+        Question question = questionRepository.findById(csQuestionId)
+                .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
+        if (!user.getId().equals(question.getUserId())) {
+            throw new AnswerException(AnswerErrorCode.UNAUTHORIZED_QUESTION_ACCESS);
+        }
+
+        return resolveAndSave(
+                question,
+                null,
+                newAnswer,
+                (q, ans) -> gptService.createPromptForAnswerProject(q.getRelatedCode(), q.getQuestion(), ans)
+        );
+    }
+    private Answer resolveAndSave(
+            Question question,
+            Long userId,
+            String newAnswer,
+            BiFunction<Question, String, String> promptBuilder
+    ) {
+        Answer userAnswer = answerRepository
+                .findByQuestionIdAndUserIdAndAuthor(
+                        question.getId(), userId, Author.USER
+                )
+                .orElseThrow(() -> new AnswerException(AnswerErrorCode.NOT_FOUND_ANSWER));
+        userAnswer.resolve(newAnswer);
+        answerRepository.save(userAnswer);
+
+        Answer aiFeedback = answerRepository
+                .findByQuestionIdAndUserIdAndAuthor(
+                        question.getId(), userId, Author.AI
+                )
+                .orElseThrow(() -> new AnswerException(AnswerErrorCode.NOT_FOUND_ANSWER));
+
+        String prompt = promptBuilder.apply(question, newAnswer);
+        String generated = gptService.callGptApi(prompt);
+        String feedback = getFeedback(generated);
+
+        aiFeedback.resolve(feedback);
+        return answerRepository.save(aiFeedback);
+    }
+
+    private String getFeedback(String input) {
+        String sanitized = input
+                .replaceAll("(?m)^```(?:json)?\\s*", "")
+                .replaceAll("(?m)```\\s*$", "")
+                .trim();
+
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            List<Map<String, String>> result = objectMapper.readValue(input,
-                    new TypeReference<List<Map<String, String>>>(){});
-            if (!result.isEmpty() && result.get(0).containsKey("feedback")) {
-                feedback = result.get(0).get("feedback");
-            }
+            List<Map<String, String>> list = objectMapper.readValue(
+                    sanitized,
+                    new TypeReference<List<Map<String, String>>>() {}
+            );
+            return list.isEmpty() ? "" : list.get(0).getOrDefault("feedback", "");
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new AnswerException(AnswerErrorCode.FEEDBACK_PARSE_ERROR);
         }
-        return feedback;
     }
+
+
 }
 

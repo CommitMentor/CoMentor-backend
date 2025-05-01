@@ -10,8 +10,9 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class ProjectCsQuestionInfoResponse {
+    private String fileName;
     private Long questionId;
-    private CSCategory csCategory;;
+    private CSCategory csCategory;
     private String relatedCode;
     private String question;
     private QuestionStatus questionStatus;

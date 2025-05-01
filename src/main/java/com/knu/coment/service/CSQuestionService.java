@@ -4,14 +4,12 @@ import com.knu.coment.dto.cs.CSDashboard;
 import com.knu.coment.dto.cs.CSQuestionInfoResponse;
 import com.knu.coment.dto.cs.QuestionListDto;
 import com.knu.coment.dto.gpt.CreateFeedBackResponseDto;
-import com.knu.coment.entity.Answer;
-import com.knu.coment.entity.UserCSQuestion;
-import com.knu.coment.entity.Question;
-import com.knu.coment.entity.User;
+import com.knu.coment.entity.*;
 import com.knu.coment.exception.QuestionException;
 import com.knu.coment.exception.code.QuestionErrorCode;
 import com.knu.coment.global.CSCategory;
 import com.knu.coment.repository.AnswerRepository;
+import com.knu.coment.repository.FolderRepository;
 import com.knu.coment.repository.UserCSQuestionRepository;
 import com.knu.coment.repository.QuestionRepository;
 import com.knu.coment.util.PageResponse;
@@ -76,7 +74,8 @@ public class CSQuestionService {
                 q.getQuestion(),
                 q.getStack(),
                 q.getCsCategory(),
-                uq.getQuestionStatus()
+                uq.getQuestionStatus(),
+                uq.getFileName()
         );
     }
     public CSQuestionInfoResponse getCSQuestionDetail(String githubId, Long csQuestionId) {
@@ -95,6 +94,7 @@ public class CSQuestionService {
                 .collect(Collectors.toList());
 
         return new CSQuestionInfoResponse(
+                userCSQuestion.getFileName(),
                 userCSQuestion.getId(),
                 question.getQuestion(),
                 userCSQuestion.getQuestionStatus(),

@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -44,13 +43,12 @@ public class FolderService {
     @Transactional(readOnly = true)
     public List<FolderCsQuestionListDto> getFolderQuestions(String githubId, Long folderId) {
         User user = userService.findByGithubId(githubId);
-        System.out.print("folderId = " + folderId + "\n");
-        folderRepository.findByUserIdAndId(user.getId(), folderId)
+        Folder folder = folderRepository.findByUserIdAndId(user.getId(), folderId)
                 .orElseThrow(() -> new FolderException(FolderErrorCode.NOT_FOUND_FOLDER));
 
         List<FolderCsQuestionListDto> result = new ArrayList<>();
 
-        List<Question> projectQuestions = questionRepository.findAllByFolderId(folderId);
+        List<Question> projectQuestions = questionRepository.findAllByFileName(folder.getFileName());
         result.addAll(
                 projectQuestions.stream()
                         .map(q -> {
@@ -73,7 +71,7 @@ public class FolderService {
                         .toList()
         );
 
-        List<UserCSQuestion> userCSQuestions = userCSQuestionRepository.findAllByUserIdAndFolderId(user.getId(), folderId);
+        List<UserCSQuestion> userCSQuestions = userCSQuestionRepository.findAllByUserIdAndFileName(user.getId(), folder.getFileName());
 
         if (!userCSQuestions.isEmpty()) {
             List<Long> csQuestionIds = userCSQuestions.stream()
@@ -123,12 +121,12 @@ public class FolderService {
         if (dto.getCsQuestionId() != null) {
             UserCSQuestion userCSQuestion = userCSQuestionRepository.findByIdAndUserId(dto.getCsQuestionId(), user.getId())
                     .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
-            userCSQuestion.bookMark(folder.getId());
+            userCSQuestion.bookMark(folder.getFileName());
             userCSQuestionRepository.save(userCSQuestion);
         } else if (dto.getQuestionId() != null) {
             Question question = questionRepository.findByIdAndUserId(dto.getQuestionId(), user.getId())
                     .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
-            question.bookMark(folder.getId());
+            question.bookMark(folder.getFileName());
             questionRepository.save(question);
         } else {
             throw new FolderException(FolderErrorCode.MISSING_REQUIRED_FIELD);
@@ -147,7 +145,7 @@ public class FolderService {
         if (dto.getCsQuestionId() != null) {
             UserCSQuestion userCSQuestion = userCSQuestionRepository.findByIdAndUserId(dto.getCsQuestionId(), user.getId())
                     .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
-            if (!folder.getId().equals(userCSQuestion.getFolderId())) {
+            if (!folder.getFileName().equals(userCSQuestion.getFileName())) {
                 throw new FolderException(FolderErrorCode.BAD_REQUEST);
             }
             userCSQuestion.unBookMark();
@@ -155,7 +153,7 @@ public class FolderService {
         } else if (dto.getQuestionId() != null) {
             Question question = questionRepository.findByIdAndUserId(dto.getQuestionId(), user.getId())
                     .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
-            if (!folder.getId().equals(question.getFolderId())) {
+            if (!folder.getFileName().equals(question.getFileName())) {
                 throw new FolderException(FolderErrorCode.BAD_REQUEST);
             }
             question.unBookMark();
@@ -190,13 +188,13 @@ public class FolderService {
         Folder folder = folderRepository.findByUserIdAndId(user.getId(), folderId)
                 .orElseThrow(() -> new FolderException(FolderErrorCode.NOT_FOUND_FOLDER));
 
-        List<Question> questions = questionRepository.findAllByFolderId(folderId);
+        List<Question> questions = questionRepository.findAllByFileName(folder.getFileName());
         for (Question question : questions) {
             question.unBookMark();
             questionRepository.save(question);
         }
 
-        List<UserCSQuestion> userCSQuestions = userCSQuestionRepository.findAllByUserIdAndFolderId(user.getId(), folderId);
+        List<UserCSQuestion> userCSQuestions = userCSQuestionRepository.findAllByUserIdAndFileName(user.getId(), folder.getFileName());
         for (UserCSQuestion userCSQuestion : userCSQuestions) {
             userCSQuestion.unBookMark();
             userCSQuestionRepository.save(userCSQuestion);
@@ -209,8 +207,8 @@ public class FolderService {
     }
 
     private String generateDefaultName(Long userId) {
-        long existing = folderRepository.countByUserIdAndFileNameStartingWith(userId, "default");
-        return existing == 0 ? "default" : "default" + (existing + 1);
+        long existing = folderRepository.countByUserIdAndFileNameStartingWith(userId, "폴더");
+        return existing == 0 ? "폴더" : "폴더" + (existing + 1);
     }
 
 }

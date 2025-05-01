@@ -32,7 +32,6 @@ public class DailyQuestionScheduler {
 //        generateDailyQuestions(); // 애플리케이션 시작 시 실행
 //    }
 
-
     @Scheduled(cron = "0 0 10 * * *", zone = "Asia/Seoul")
     @Transactional
     public void generateDailyQuestions() {
@@ -40,12 +39,15 @@ public class DailyQuestionScheduler {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
         for (User user : users) {
+            LocalDate expiryDate = today.minusDays(3);
+            userCSQuestionRepository.deleteOldUnsolvedQuestions(user.getId(), expiryDate);
+            //log.info("유저 {} 의 만료된 문제를 삭제했습니다.", user.getId());
             boolean alreadyGenerated = userCSQuestionRepository.existsByUserIdAndDate(user.getId(), today);
             if (alreadyGenerated) continue;
 
             List<Stack> stacks = userStackRepository.findStacksByUserId(user.getId());
             if (stacks.isEmpty()) {
-                log.info("유저 {} 는 스택이 없어 추천할 수 없습니다.", user.getId());
+                //log.info("유저 {} 는 스택이 없어 추천할 수 없습니다.", user.getId());
                 continue;
             }
 
@@ -68,7 +70,7 @@ public class DailyQuestionScheduler {
             }
 
             if (recommended.isEmpty()) {
-                log.info("유저 {} 에게 추천할 문제가 없습니다.", user.getId());
+                //log.info("유저 {} 에게 추천할 문제가 없습니다.", user.getId());
                 continue;
             }
 
@@ -77,7 +79,7 @@ public class DailyQuestionScheduler {
                     .toList();
 
             userCSQuestionRepository.saveAll(UserCSQuestions);
-            log.info("유저 {} 에게 {}개의 문제를 추천 완료했습니다.", user.getId(), UserCSQuestions.size());
+            //log.info("유저 {} 에게 {}개의 문제를 추천 완료했습니다.", user.getId(), UserCSQuestions.size());
         }
     }
 }

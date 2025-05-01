@@ -64,9 +64,9 @@ class FolderServiceTest {
         folder.setId(10L);
 
         question = new Question(CSCategory.DATABASES, QuestionType.PROJECT, "ddd",
-                "ddd",LocalDateTime.now(), QuestionStatus.TODO, "default", 10L, 1L,1L);
+                "ddd",LocalDateTime.now(), QuestionStatus.TODO, "default", "default", 1L,1L);
         ReflectionTestUtils.setField(question, "id", 1L);
-        question.bookMark(10L);
+        question.bookMark("default");
 
         repo = new Repo(100L, "testRepo", "https://github.com/testUser/testRepo",
                 "2021-01-01T00:00:00Z", "Java",
@@ -76,7 +76,7 @@ class FolderServiceTest {
 
 
         userCSQuestion = new UserCSQuestion(user.getId(), 1L, LocalDate.now(), QuestionStatus.TODO);
-        userCSQuestion.bookMark(10L);
+        userCSQuestion.bookMark("default");
     }
 
     @Test
@@ -84,8 +84,8 @@ class FolderServiceTest {
     void getFolderQuestions_Success() {
         when(userService.findByGithubId(anyString())).thenReturn(user);
         when(folderRepository.findByUserIdAndId(anyLong(), anyLong())).thenReturn(Optional.of(folder));
-        when(questionRepository.findAllByFolderId(anyLong())).thenReturn(List.of(question));
-        when(userCSQuestionRepository.findAllByUserIdAndFolderId(anyLong(), anyLong())).thenReturn(List.of(userCSQuestion));
+        when(questionRepository.findAllByFileName(anyString())).thenReturn(List.of(question));
+        when(userCSQuestionRepository.findAllByUserIdAndFileName(anyLong(), anyString())).thenReturn(List.of(userCSQuestion));
         when(questionRepository.findAllById(anyList())).thenReturn(List.of(question));
 
         when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
@@ -116,6 +116,8 @@ class FolderServiceTest {
         when(folderRepository.findByUserIdAndFileName(anyLong(), anyString()))
                 .thenReturn(Optional.of(folder));
         when(projectQuestionService.findById(anyLong())).thenReturn(question);
+        when(questionRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(question));
+
 
         BookMarkRequestDto dto = new BookMarkRequestDto();
         dto.setQuestionId(1L);
@@ -133,6 +135,9 @@ class FolderServiceTest {
         when(folderRepository.findByUserIdAndFileName(anyLong(), anyString()))
                 .thenReturn(Optional.of(folder));
         when(userCSQuestionRepository.findById(anyLong())).thenReturn(Optional.of(userCSQuestion));
+        when(userCSQuestionRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(userCSQuestion));
+
+
 
         BookMarkRequestDto dto = new BookMarkRequestDto();
         dto.setCsQuestionId(1L);
@@ -148,8 +153,8 @@ class FolderServiceTest {
     void deleteFolder_Success() {
         when(userService.findByGithubId(anyString())).thenReturn(user);
         when(folderRepository.findByUserIdAndId(anyLong(), anyLong())).thenReturn(Optional.of(folder));
-        when(questionRepository.findAllByFolderId(anyLong())).thenReturn(List.of(question));
-        when(userCSQuestionRepository.findAllByUserIdAndFolderId(anyLong(), anyLong())).thenReturn(List.of(userCSQuestion));
+        when(questionRepository.findAllByFileName(anyString())).thenReturn(List.of(question));
+        when(userCSQuestionRepository.findAllByUserIdAndFileName(anyLong(), anyString())).thenReturn(List.of(userCSQuestion));
 
         folderService.deleteFolder("testGithub", 10L);
 

@@ -77,7 +77,7 @@ class DailyQuestionSchedulerTest {
         when(userStackRepository.findStacksByUserId(user.getId())).thenReturn(List.of(Stack.BACKEND));
         when(userCSQuestionRepository.existsByUserIdAndDate(eq(user.getId()), any(LocalDate.class))).thenReturn(false);
         when(userCSQuestionRepository.findSolvedQuestionIdsByUserId(user.getId())).thenReturn(List.of());
-        when(questionRepository.findBalancedUnansweredWithoutExclude(any(), anyInt(), anyInt(), anyLong()))
+        when(questionRepository.findBalancedUnreceivedWithoutExclude(any(), anyInt(), anyInt()))
                 .thenReturn(List.of(question));
 
         // when
@@ -94,7 +94,7 @@ class DailyQuestionSchedulerTest {
         when(userStackRepository.findStacksByUserId(user.getId())).thenReturn(List.of(Stack.BACKEND));
         when(userCSQuestionRepository.existsByUserIdAndDate(eq(user.getId()), any(LocalDate.class))).thenReturn(false);
         when(userCSQuestionRepository.findSolvedQuestionIdsByUserId(user.getId())).thenReturn(List.of());
-        when(questionRepository.findBalancedUnansweredWithoutExclude(any(), anyInt(), anyInt(), anyLong()))
+        when(questionRepository.findBalancedUnreceivedWithoutExclude(any(), anyInt(), anyInt()))
                 .thenReturn(List.of());
 
         // when

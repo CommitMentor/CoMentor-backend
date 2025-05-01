@@ -34,4 +34,8 @@ public class Answer {
         this.questionId = questionId;
         this.userId = userId;
     }
+
+    public void resolve(String content) {
+        this.content = content;
+    }
 }

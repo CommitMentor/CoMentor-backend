@@ -14,5 +14,6 @@ public class QuestionListDto {
     private Stack stack;
     private CSCategory csCategory;
     private QuestionStatus questionStatus;
+    private String fileName;
 
 }

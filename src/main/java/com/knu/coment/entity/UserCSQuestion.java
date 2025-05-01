@@ -19,7 +19,7 @@ public class UserCSQuestion {
     private LocalDate date;
     @Enumerated(EnumType.STRING)
     private QuestionStatus questionStatus;
-    private Long folderId;
+    private String fileName;
 
     public UserCSQuestion(Long userId, Long questionId, LocalDate date, QuestionStatus questionStatus) {
         this.userId = userId;
@@ -32,10 +32,10 @@ public class UserCSQuestion {
         this.questionStatus = QuestionStatus.DONE;
     }
 
-    public void bookMark(Long folderId) {
-        this.folderId = folderId;
+    public void bookMark(String fileName) {
+        this.fileName = fileName;
     }
     public void unBookMark() {
-        this.folderId = null;
+        this.fileName = null;
     }
 }
