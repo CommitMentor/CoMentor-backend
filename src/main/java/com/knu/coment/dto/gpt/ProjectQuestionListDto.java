@@ -11,4 +11,5 @@ public class ProjectQuestionListDto {
     private String question;
     private String folderName;
     private QuestionStatus questionStatus;
+    private String fileName;
 }

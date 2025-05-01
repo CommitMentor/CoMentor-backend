@@ -45,9 +45,9 @@ public class Question {
 
     private Long userId;
     private Long projectId;
-    private Long folderId;
+    private String fileName;
 
-    public Question(CSCategory csCategory, QuestionType questionType, String relatedCode, String question, LocalDateTime createAt, QuestionStatus questionStatus, String folderName, Long folderId, Long userId, Long projectId) {
+    public Question(CSCategory csCategory, QuestionType questionType, String relatedCode, String question, LocalDateTime createAt, QuestionStatus questionStatus, String folderName, String fileName, Long userId, Long projectId) {
 
         this.csCategory = csCategory;
         this.questionType = questionType;
@@ -56,7 +56,7 @@ public class Question {
         this.createAt = createAt;
         this.questionStatus = questionStatus;
         this.folderName = folderName;
-        this.folderId = folderId;
+        this.fileName = fileName;
         this.userId = userId;
         this.projectId = projectId;
     }
@@ -72,12 +72,12 @@ public class Question {
         this.questionStatus = QuestionStatus.DONE;
     }
 
-    public void bookMark(Long folderId) {
-        this.folderId = folderId;
+    public void bookMark(String fileName) {
+        this.fileName = fileName;
     }
 
     public void unBookMark() {
-        this.folderId = null;
+        this.fileName = null;
     }
 
 }

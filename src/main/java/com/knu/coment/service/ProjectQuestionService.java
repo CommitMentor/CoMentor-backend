@@ -116,6 +116,7 @@ public class ProjectQuestionService {
                 .collect(Collectors.toList());
 
         return new ProjectCsQuestionInfoResponse(
+                projectCsQuestion.getFileName(),
                 projectCsQuestion.getId(),
                 projectCsQuestion.getCsCategory(),
                 projectCsQuestion.getRelatedCode(),
@@ -138,7 +139,7 @@ public class ProjectQuestionService {
                         entry.getKey(),
                         entry.getValue().stream()
                                 .sorted(Comparator.comparing(Question::getId).reversed())
-                                .map(q -> new ProjectQuestionListDto(q.getId(), q.getQuestion(),q.getFolderName(), q.getQuestionStatus()))
+                                .map(q -> new ProjectQuestionListDto(q.getId(), q.getQuestion(),q.getFolderName(), q.getQuestionStatus(), q.getFileName()))
                                 .collect(Collectors.toList())
                 ))
                 .sorted(Comparator.comparing(CsQuestionListDto::getCreatedAt).reversed())

@@ -30,7 +30,7 @@ public interface UserCSQuestionRepository extends JpaRepository<UserCSQuestion, 
       and ucq.questionStatus = 'DONE'
 """)
     List<Long> findSolvedQuestionIdsByUserId(@Param("userId") Long userId);
-    List<UserCSQuestion> findAllByUserIdAndFolderId(Long userId, Long folderId);
+    List<UserCSQuestion> findAllByUserIdAndFileName(Long userId, String fileName);
 
     @Query("SELECT ucq FROM UserCSQuestion ucq " +
             "JOIN Question q ON ucq.questionId = q.id " +

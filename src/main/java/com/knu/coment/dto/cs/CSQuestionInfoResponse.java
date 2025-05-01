@@ -12,6 +12,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class CSQuestionInfoResponse {
+    private String fileName;
     private Long csQuestionId;
     private String question;
     private QuestionStatus questionStatus;
