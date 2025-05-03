@@ -122,24 +122,35 @@ public class GptService {
                 .append("질문:\n").append(csQuestion).append("\n\n")
                 .append("사용자 답변:\n").append(answer).append("\n\n");
 
-        prompt.append("지침:\n")
-                .append("1. 'feedback' 필드에 자세한 해설 또는 피드백을 작성하세요. 사용자 답변이 적절한 부분은 인정하고, 개선점을 구체적으로 제시합니다.\n")
-                .append("2. 사용자의 답변이 비어 있거나 불충분하면 모범 답안을 직접 작성하세요.\n")
-                .append("3. 최종 출력은 JSON 배열 형식의 단일 원소로, 불필요한 텍스트는 절대 추가하지 마세요.\n")
-                .append("   - 설명, 마크다운, 주석 등은 제거합니다.\n\n");
+        prompt.append("#### 지침\n")
+                .append("1. 출력은 **JSON 배열** 한 개 원소만, 배열 외 불필요한 텍스트는 절대 추가하지 마세요.\n")
+                .append("2. `feedback` 필드 안에 다음 마크다운 구조를 사용하세요:\n")
+                .append("   ```markdown\n")
+                .append("   ## ✅ 정확한 답변\n")
+                .append("   - 면접 시 답변하듯 **상세하게**, 고려한 과정과 근거를 포함하여 설명하세요.\n\n")
+                .append("   ## 📝 사용자 답변 평가 및 보완점\n")
+                .append("   - 사용자의 답변이 **비어있거나 완전히 틀렸다면**, 칭찬은 생략하고 바로 보완 설명을 제시하세요.\n")
+                .append("   - 사용자의 답변이 일부 맞았다면, 그 부분만 간단히 언급하고 나머지 보완점을 상세히 작성하세요.\n")
+                .append("   ```\n\n");
 
-        prompt.append("출력 예시 1:\n")
+        prompt.append("#### 예시 출력\n")
+                .append("```json\n")
                 .append("[\n")
                 .append("  {\n")
-                .append("    \"feedback\": \"TCP 3-way handshake는 ... (중략)\"\n")
+                .append("    \"feedback\": \"## ✅ 정확한 답변\\n")
+                .append("- 힙 정렬은 힙 자료구조를 활용해 배열을 최대 힙으로 만든 뒤, 루트 값을 교환하고 힙을 재구성하는 과정을 반복합니다. 이로써 전체 정렬이 O(n log n)에 수행됩니다.\\n\\n")
+                .append("## 📝 사용자 답변 평가 및 보완점\\n")
+                .append("- 사용자의 답변이 비어있거나 완전히 틀려서, 올바른 힙 정렬 과정을 단계별로 설명했습니다.\"\n")
                 .append("  }\n")
-                .append("]\n\n");
+                .append("]\n")
+                .append("```");
 
         prompt.append("위 예시처럼 'feedback' 키 아래에 상세한 해설을 작성하고, 필요 시 사용자 답변의 장단점을 평가하세요.");
 
         return prompt.toString();
     }
     public String createPromptForAnswerCS(
+            Stack stack,
             CSCategory csCategory,
             String question,
             String answer
@@ -149,7 +160,8 @@ public class GptService {
         prompt.append("당신은 10년 경력의 시니어 소프트웨어 엔지니어이자 면접관입니다.\n")
                 .append("아래 제공된 사용자 스택, 질문 카테고리, 질문(및 포함된 코드 예시), 그리고 사용자가 작성한 답변을 참고하여, 정확한 해설과 피드백을 제시하세요.\n\n");
 
-        prompt.append("질문 카테고리:\n```").append(csCategory).append("```\n\n")
+        prompt.append("사용자 스택\n```").append(stack).append("```\n\n")
+                .append("질문 카테고리:\n```").append(csCategory).append("```\n\n")
                 .append("질문:\n```").append(question).append("```\n\n")
                 .append("사용자 답변:\n```").append(answer).append("```\n\n");
 

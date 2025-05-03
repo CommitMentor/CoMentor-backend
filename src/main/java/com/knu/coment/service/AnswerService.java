@@ -54,7 +54,7 @@ public class AnswerService {
         answerRepository.save(newAnswer);
         userCSQuestion.markAsDone();
         userCSQuestionRepository.save(userCSQuestion);
-        String prompt = gptService.createPromptForAnswerCS(projectCsQuestion.getCsCategory(),projectCsQuestion.getQuestion(), answer);
+        String prompt = gptService.createPromptForAnswerCS(projectCsQuestion.getStack(),projectCsQuestion.getCsCategory(),projectCsQuestion.getQuestion(), answer);
         String generatedAnswer = gptService.callGptApi(prompt);
         generatedAnswer = getFeedback(generatedAnswer);
         Answer newFeedback = new Answer(
@@ -113,7 +113,7 @@ public class AnswerService {
                 question,
                 user.getId(),
                 newAnswer,
-                (q, ans) -> gptService.createPromptForAnswerCS(q.getCsCategory(), q.getQuestion(), ans)
+                (q, ans) -> gptService.createPromptForAnswerCS(q.getStack(), q.getCsCategory(), q.getQuestion(), ans)
         );
     }
 
