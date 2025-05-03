@@ -37,5 +37,6 @@ public class Answer {
 
     public void resolve(String content) {
         this.content = content;
+        this.answeredAt = LocalDateTime.now();
     }
 }
