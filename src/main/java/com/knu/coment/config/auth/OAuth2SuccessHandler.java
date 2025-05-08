@@ -38,7 +38,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         if ("dev".equals(env)) {
             redirectBaseUrl = "http://localhost:3000/token";
         } else {
-            redirectBaseUrl = "https://comentor.vercel.app/token";
+            redirectBaseUrl = "https://www.comentor.store/token";
         }
 
         String githubId = authentication.getName();
