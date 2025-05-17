@@ -18,6 +18,8 @@
 # 경로 상관없이 같은 이름 파일 모두 제외
 **/application-secret.yml
 
+#firbase
+.env
 
 # AWS User-specific
 .idea/**/aws.xml
