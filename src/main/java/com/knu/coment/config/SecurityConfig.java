@@ -80,7 +80,9 @@ public class SecurityConfig {
                                         new AntPathRequestMatcher("/github/**"),
                                         new AntPathRequestMatcher("/folder/**"),
                                         new AntPathRequestMatcher("/question/**"),
-                                        new AntPathRequestMatcher("/feedback/**")
+                                        new AntPathRequestMatcher("/feedback/**"),
+                                        new AntPathRequestMatcher("/push/**"),
+                                        new AntPathRequestMatcher("/notifications/**")
                         ).hasAuthority(Role.USER.getKey())
                         .anyRequest().authenticated()
                 )

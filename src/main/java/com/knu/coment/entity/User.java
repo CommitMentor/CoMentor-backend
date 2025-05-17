@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,6 +36,8 @@ public class User {
 
     @Column(name ="avatar_url")
     private String avatarUrl;
+
+    private LocalDateTime lastActivityAt;
 
     @Builder
     public User(Long id, String userName, String email, Boolean notification, Role userRole, String githubId, String avatarUrl){
@@ -67,6 +70,9 @@ public class User {
 
     public void updateGithubAccessToken(String githubAccessToken) {
         this.githubAccessToken = githubAccessToken;
+    }
+    public void updateLastActivityAt() {
+        this.lastActivityAt = LocalDateTime.now();
     }
 
 }

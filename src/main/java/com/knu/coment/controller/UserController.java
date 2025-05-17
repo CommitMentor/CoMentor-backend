@@ -4,6 +4,7 @@ import com.knu.coment.dto.UserDto;
 import com.knu.coment.entity.User;
 import com.knu.coment.global.code.Api_Response;
 import com.knu.coment.global.code.SuccessCode;
+import com.knu.coment.repository.UserRepository;
 import com.knu.coment.service.UserService;
 import com.knu.coment.util.ApiResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
     @Operation(summary = "회원가입", description = "회원가입 시 필수 추가 정보를 등록 API 입니다.")
     @PostMapping("/join")
@@ -107,4 +110,20 @@ public class UserController {
                 SuccessCode.INSERT_SUCCESS.getMessage(), updatedUser.getRefreshToken());
     }
 
+    @Operation(summary ="사용자 마지막 활동 시간 업데이트", description = "사용자 마지막 활동 시간 업데이트 API입니다.")
+    @PostMapping("/activity")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "사용자 마지막 활동 시간 업데이트 성공", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "404", description = "업데이트 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
+    })
+    public ResponseEntity<?> updateLastActivity(@AuthenticationPrincipal UserDetails userDetails, HttpServletRequest request) {
+        String githubId = userDetails.getUsername();
+        User user = userService.findByGithubId(githubId);
+        user.updateLastActivityAt();
+        userRepository.save(user);
+        return ApiResponseUtil.ok(
+                SuccessCode.UPDATE_SUCCESS.getMessage());
+    }
 }

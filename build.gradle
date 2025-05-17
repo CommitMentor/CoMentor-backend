@@ -56,6 +56,9 @@ dependencies {
         exclude group: "org.slf4j", module: "slf4j-ext"
     }
 
+    // ========== Firebase ==========
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
+
 }
 
 tasks.named('test') {
