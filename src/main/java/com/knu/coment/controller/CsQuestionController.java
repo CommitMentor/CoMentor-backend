@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Map;
+
 @Tag(name = "CSQuestion 컨트롤러", description = "CS Question API입니다.")
 @Controller
 @RequestMapping("/question")
@@ -63,6 +65,24 @@ public class CsQuestionController {
         return ApiResponseUtil.ok(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 csQuestionInfoResponse
+        );
+    }
+    @Operation(summary = "카테고리별 질문 수 조회", description = "카테고리별 질문 수 조회 API입니다")
+    @GetMapping("/category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "카테고리별 질문 수 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "404", description = "카테고리별 질문 수 조회 실패"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    public ResponseEntity<?> getCategoryCount(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String githubId = userDetails.getUsername();
+        Map<String, Long> count = csQuestionService.getSolvedCountByCategory(githubId);
+
+        return ApiResponseUtil.ok(
+                SuccessCode.SELECT_SUCCESS.getMessage(),
+                count
         );
     }
 }

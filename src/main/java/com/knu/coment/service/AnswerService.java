@@ -33,6 +33,7 @@ public class AnswerService {
     private final UserService userService;
     private final GptService gptService;
     private final UserCSQuestionRepository userCSQuestionRepository;
+    private final UserStudyLogService userStudyLogService;
 
     public Answer createCSAnswer(String githubId, Long userCSQuestionId, String answer) {
         User user = userService.findByGithubId(githubId);
@@ -53,6 +54,7 @@ public class AnswerService {
         );
         answerRepository.save(newAnswer);
         userCSQuestion.markAsDone();
+        userStudyLogService.updateSolvedCount(user.getId());
         userCSQuestionRepository.save(userCSQuestion);
         String prompt = gptService.createPromptForAnswerCS(projectCsQuestion.getStack(),projectCsQuestion.getCsCategory(),projectCsQuestion.getQuestion(), answer);
         String generatedAnswer = gptService.callGptApi(prompt);
@@ -86,6 +88,7 @@ public class AnswerService {
         );
         answerRepository.save(newAnswer);
         projectCsQuestion.markAsDone();
+        userStudyLogService.updateSolvedCount(user.getId());
         questionRepository.save(projectCsQuestion);
         String prompt = gptService.createPromptForAnswerProject(projectCsQuestion.getRelatedCode(), projectCsQuestion.getQuestion(), answer);
         String generatedAnswer = gptService.callGptApi(prompt);
@@ -106,6 +109,7 @@ public class AnswerService {
         UserCSQuestion ucq = userCSQuestionRepository
                 .findByIdAndUserId(userCSQuestionId, user.getId())
                 .orElseThrow(() -> new AnswerException(AnswerErrorCode.NOT_RECOMMENDED_QUESTION));
+        userStudyLogService.updateSolvedCount(user.getId());
         Question question = questionRepository.findById(ucq.getQuestionId())
                 .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
 
@@ -121,7 +125,7 @@ public class AnswerService {
     public Answer retryProjectAnswer(String githubId, Long csQuestionId, String newAnswer) {
 
         User user = userService.findByGithubId(githubId);
-
+        userStudyLogService.updateSolvedCount(user.getId());
         Question question = questionRepository.findById(csQuestionId)
                 .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
         if (!user.getId().equals(question.getUserId())) {

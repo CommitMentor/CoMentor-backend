@@ -103,5 +103,15 @@ public class CSQuestionService {
                 answerResponses
         );
     }
+    public Map<String, Long> getSolvedCountByCategory(String githubId) {
+        User user = userService.findByGithubId(githubId);
+        List<Object[]> rawResults = userCSQuestionRepository.countSolvedByCategory(user.getId());
+
+        return rawResults.stream()
+                .collect(Collectors.toMap(
+                        row -> row[0].toString(),
+                        row -> (Long) row[1]
+                ));
+    }
 
 }
