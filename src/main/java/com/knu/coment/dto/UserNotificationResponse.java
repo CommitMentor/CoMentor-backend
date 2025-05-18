@@ -8,7 +8,7 @@ public record UserNotificationResponse(
         Long id,
         String title,
         String body,
-        boolean read,
+        boolean isRead,
         LocalDateTime sentAt
 ) {
     public static UserNotificationResponse from(UserNotification notification) {
