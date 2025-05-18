@@ -127,23 +127,27 @@ public class ProjectQuestionService {
         );
     }
 
-    public List<CsQuestionListDto> getGroupedCsQuestions(String githubId, Long projectId) {
+    public List<CsQuestionListDto> getGroupedCsQuestions(String githubId, Long projectId, CSCategory category) {
         User user = userService.findByGithubId(githubId);
         validateProjectOwner(user.getId(), projectId);
         List<Question> questions = questionRepository.findAllByProjectId(projectId);
-
-        return questions.stream()
+        List<Question> filtered = (category != null)
+                ? questions.stream()
+                .filter(q -> q.getCsCategory() == category)
+                .toList()
+                : questions;
+        return filtered.stream()
                 .collect(Collectors.groupingBy(q -> q.getCreateAt().toLocalDate()))
                 .entrySet().stream()
                 .map(entry -> new CsQuestionListDto(
                         entry.getKey(),
                         entry.getValue().stream()
                                 .sorted(Comparator.comparing(Question::getId).reversed())
-                                .map(q -> new ProjectQuestionListDto(q.getId(), q.getQuestion(),q.getFolderName(), q.getQuestionStatus(), q.getFileName()))
+                                .map(q -> new ProjectQuestionListDto(q.getId(), q.getQuestion(),q.getFolderName(), q.getQuestionStatus(), q.getCsCategory(),q.getFileName()))
                                 .collect(Collectors.toList())
                 ))
                 .sorted(Comparator.comparing(CsQuestionListDto::getCreatedAt).reversed())
-                .collect(Collectors.toList());
+                .toList();
     }
     @Transactional
     public void deleteProjectCsQuestion(Long projectCsQuestionId) {
@@ -155,6 +159,17 @@ public class ProjectQuestionService {
         questionRepository.deleteById(csQuestionId);
 
         questionRepository.deleteById(projectCsQuestionId);
+    }
+
+    public Map<String, Long> getSolvedCountByCategory(String githubId) {
+        User user = userService.findByGithubId(githubId);
+        List<Object[]> rawResults = questionRepository.countSolvedByCategory(user.getId());
+
+        return rawResults.stream()
+                .collect(Collectors.toMap(
+                        row -> row[0].toString(),
+                        row -> (Long) row[1]
+                ));
     }
 
 }

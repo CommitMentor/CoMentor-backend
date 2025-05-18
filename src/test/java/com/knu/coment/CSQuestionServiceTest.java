@@ -25,6 +25,7 @@ import org.springframework.data.domain.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -165,5 +166,29 @@ class CSQuestionServiceTest {
                 .isInstanceOf(com.knu.coment.exception.QuestionException.class)
                 .hasMessageContaining("질문을 찾을 수 없습니다");
     }
+    @Test
+    @DisplayName("getSolvedCountByCategory: 카테고리별 완료 문제 수 집계 성공")
+    void getSolvedCountByCategory_Success() {
+        // given
+        when(userService.findByGithubId("testUser")).thenReturn(user);
+
+        List<Object[]> mockResult = List.of(
+                new Object[]{"DATA_STRUCTURES_ALGORITHMS", 5L},
+                new Object[]{"OPERATING_SYSTEMS", 3L},
+                new Object[]{"NETWORKING", 2L}
+        );
+        when(userCSQuestionRepository.countSolvedByCategory(user.getId()))
+                .thenReturn(mockResult);
+
+        // when
+        Map<String, Long> result = csQuestionService.getSolvedCountByCategory("testUser");
+
+        // then
+        assertThat(result).hasSize(3);
+        assertThat(result.get("DATA_STRUCTURES_ALGORITHMS")).isEqualTo(5L);
+        assertThat(result.get("OPERATING_SYSTEMS")).isEqualTo(3L);
+        assertThat(result.get("NETWORKING")).isEqualTo(2L);
+    }
+
 
 }

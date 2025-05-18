@@ -54,5 +54,13 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
             @Param("total") int totalRows
     );
 
+    @Query("""
+    SELECT q.csCategory, COUNT(q)
+    FROM Question q
+    WHERE q.userId = :userId
+      AND q.questionStatus = 'DONE'
+    GROUP BY q.csCategory
+""")
+    List<Object[]> countSolvedByCategory(@Param("userId") Long userId);
 
 }

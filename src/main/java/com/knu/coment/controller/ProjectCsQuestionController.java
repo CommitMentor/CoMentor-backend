@@ -2,6 +2,7 @@ package com.knu.coment.controller;
 
 import com.knu.coment.dto.gpt.*;
 import com.knu.coment.entity.Question;
+import com.knu.coment.global.CSCategory;
 import com.knu.coment.global.code.SuccessCode;
 import com.knu.coment.service.ProjectQuestionService;
 import com.knu.coment.util.ApiResponseUtil;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Tag(name = "PROJECT CSQuestion 컨트롤러", description = "PROJECT CS Question API입니다.")
@@ -62,9 +64,10 @@ public class ProjectCsQuestionController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     public ResponseEntity<?> getProjectCsQuestionList(@AuthenticationPrincipal UserDetails userDetails,
-                                                      @RequestParam Long projectId) {
+                                                      @RequestParam Long projectId,
+                                                      @RequestParam(required = false) CSCategory category) {
         String githubId = userDetails.getUsername();
-        List<CsQuestionListDto> csQuestionsList = projectQuestionService.getGroupedCsQuestions(githubId, projectId);
+        List<CsQuestionListDto> csQuestionsList = projectQuestionService.getGroupedCsQuestions(githubId, projectId, category);
 
         return ApiResponseUtil.ok(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
@@ -88,6 +91,24 @@ public class ProjectCsQuestionController {
         return ApiResponseUtil.ok(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 projectCsQuestionResponse
+        );
+    }
+    @Operation(summary = "카테고리별 질문 수 조회", description = "카테고리별 질문 수 조회 API입니다")
+    @GetMapping("/project/category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "카테고리별 질문 수 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "404", description = "카테고리별 질문 수 조회 실패"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    public ResponseEntity<?> getProjectCategoryCount(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String githubId = userDetails.getUsername();
+        Map<String, Long> count = projectQuestionService.getSolvedCountByCategory(githubId);
+
+        return ApiResponseUtil.ok(
+                SuccessCode.SELECT_SUCCESS.getMessage(),
+                count
         );
     }
 }

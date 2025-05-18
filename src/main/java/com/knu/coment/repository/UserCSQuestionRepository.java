@@ -47,6 +47,14 @@ public interface UserCSQuestionRepository extends JpaRepository<UserCSQuestion, 
     @Query("DELETE FROM UserCSQuestion ucq WHERE ucq.userId = :userId AND ucq.questionStatus = 'TODO' AND ucq.date < :expiryDate")
     void deleteOldUnsolvedQuestions(@Param("userId") Long userId, @Param("expiryDate") LocalDate expiryDate);
 
+    @Query("SELECT q.csCategory, COUNT(uq) " +
+            "FROM UserCSQuestion uq " +
+            "JOIN Question q ON uq.questionId = q.id " +
+            "WHERE uq.userId = :userId AND uq.questionStatus = 'DONE' " +
+            "GROUP BY q.csCategory")
+    List<Object[]> countSolvedByCategory(@Param("userId") Long userId);
+
+
 
 }
 

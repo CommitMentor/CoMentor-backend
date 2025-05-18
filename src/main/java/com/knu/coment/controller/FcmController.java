@@ -49,8 +49,8 @@ public class FcmController {
             @ApiResponse(responseCode = "404", description = "FCM 토큰 삭제 실패"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public ResponseEntity<?> deleteToken(@AuthenticationPrincipal UserDetails userDetails, @RequestParam String token) {
-        fcmService.deleteToken(token);
+    public ResponseEntity<?> deleteToken(@AuthenticationPrincipal UserDetails userDetails, @RequestBody FcmTokenDto dto) {
+        fcmService.deleteToken(dto.getFcmToken());
         return ApiResponseUtil.ok(
                 SuccessCode.DELETE_SUCCESS.getMessage()
         );
