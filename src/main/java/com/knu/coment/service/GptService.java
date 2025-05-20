@@ -60,7 +60,7 @@ public class GptService {
         prompt.append("프로젝트 정보: ").append(projectInfo).append("\n\n");
 
         prompt.append("지침:\n")
-                .append("1. 전체 코드를 분석하여 3개의 서로 다른 주제에 대한 질문을 생성하세요.\n")
+                .append("1. 전체 코드를 분석하여 3개의 서로 다른 카테고리에 대한 질문을 생성하세요.\n")
                 .append("2. 각 질문에 대해 'relatedCode' 필드에 관련 코드 블록을 원본 그대로 정확히 복사해 포함하세요.\n")
                 .append("   - 메서드 전체, 조건문·반복문·예외 처리 블록 등 맥락이 유지되도록 넓게 발췌합니다.\n")
                 .append("   - 단순 getter/setter, import, 불필요한 주석 등은 제외하세요.\n")
