@@ -1,5 +1,6 @@
 package com.knu.coment.repository;
 
+import com.knu.coment.dto.CategoryCorrectCountDto;
 import com.knu.coment.entity.Question;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -62,5 +63,18 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     GROUP BY q.csCategory
 """)
     List<Object[]> countSolvedByCategory(@Param("userId") Long userId);
+
+    @Query("""
+    SELECT new com.knu.coment.dto.CategoryCorrectCountDto(
+        q.csCategory,
+        SUM(CASE WHEN q.isCorrect = true THEN 1 ELSE 0 END),
+        SUM(CASE WHEN q.isCorrect = false THEN 1 ELSE 0 END)
+    )
+    FROM Question q
+    WHERE q.userId = :userId
+      AND q.questionType = com.knu.coment.global.QuestionType.PROJECT
+    GROUP BY q.csCategory
+""")
+    List<CategoryCorrectCountDto> countCorrectAndIncorrectByCategory(@Param("userId") Long userId);
 
 }

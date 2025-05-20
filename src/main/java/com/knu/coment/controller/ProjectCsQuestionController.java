@@ -1,5 +1,6 @@
 package com.knu.coment.controller;
 
+import com.knu.coment.dto.CategoryCorrectCountDto;
 import com.knu.coment.dto.gpt.*;
 import com.knu.coment.entity.Question;
 import com.knu.coment.global.CSCategory;
@@ -109,6 +110,24 @@ public class ProjectCsQuestionController {
         return ApiResponseUtil.ok(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 count
+        );
+    }
+    @Operation(summary ="카테고리 별 오답 수 조회", description = "카테고리 별 오답 수 조회 API입니다")
+    @GetMapping("/project/category/correct")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "카테고리 별 오답 수 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "404", description = "카테고리 별 오답 수 조회 실패"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    public ResponseEntity<?> getProjectCategoryCorrectCount(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String githubId = userDetails.getUsername();
+        List<CategoryCorrectCountDto> stats = projectQuestionService.getCategoryStatsByUser(githubId);
+
+        return ApiResponseUtil.ok(
+                SuccessCode.SELECT_SUCCESS.getMessage(),
+                stats
         );
     }
 }

@@ -20,6 +20,7 @@ public class UserCSQuestion {
     @Enumerated(EnumType.STRING)
     private QuestionStatus questionStatus;
     private String fileName;
+    private boolean isCorrect;
 
     public UserCSQuestion(Long userId, Long questionId, LocalDate date, QuestionStatus questionStatus) {
         this.userId = userId;
@@ -37,5 +38,11 @@ public class UserCSQuestion {
     }
     public void unBookMark() {
         this.fileName = null;
+    }
+    public void markAsUnCorrect() {
+        this.isCorrect = false;
+    }
+    public void markAsCorrect() {
+        this.isCorrect = true;
     }
 }

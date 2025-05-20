@@ -54,9 +54,44 @@ public class AnswerService {
         );
         answerRepository.save(newAnswer);
         userCSQuestion.markAsDone();
+        userCSQuestion.markAsCorrect();
         userStudyLogService.updateSolvedCount(user.getId());
         userCSQuestionRepository.save(userCSQuestion);
         String prompt = gptService.createPromptForAnswerCS(projectCsQuestion.getStack(),projectCsQuestion.getCsCategory(),projectCsQuestion.getQuestion(), answer);
+        String generatedAnswer = gptService.callGptApi(prompt);
+        generatedAnswer = getFeedback(generatedAnswer);
+        Answer newFeedback = new Answer(
+                generatedAnswer,
+                LocalDateTime.now(),
+                Author.AI,
+                questionId,
+                user.getId()
+        );
+        return answerRepository.save(newFeedback);
+    }
+    public Answer createCSAnswer2(String githubId, Long userCSQuestionId) {
+        User user = userService.findByGithubId(githubId);
+        UserCSQuestion userCSQuestion = userCSQuestionRepository.findByIdAndUserId(userCSQuestionId, user.getId())
+                .orElseThrow(() -> new AnswerException(AnswerErrorCode.NOT_RECOMMENDED_QUESTION));
+        if (userCSQuestion.getQuestionStatus() == QuestionStatus.DONE) {
+            throw new AnswerException(AnswerErrorCode.ALREADY_DONE_ANSWER);
+        }
+        Long questionId = userCSQuestion.getQuestionId();
+        Question projectCsQuestion = questionRepository.findById(questionId)
+                .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
+        Answer newAnswer = new Answer(
+                null,
+                LocalDateTime.now(),
+                Author.USER,
+                questionId,
+                user.getId()
+        );
+        answerRepository.save(newAnswer);
+        userCSQuestion.markAsDone();
+        userCSQuestion.markAsUnCorrect();
+        userStudyLogService.updateSolvedCount(user.getId());
+        userCSQuestionRepository.save(userCSQuestion);
+        String prompt = gptService.createPromptForAnswerCS2(projectCsQuestion.getStack(),projectCsQuestion.getCsCategory(),projectCsQuestion.getQuestion());
         String generatedAnswer = gptService.callGptApi(prompt);
         generatedAnswer = getFeedback(generatedAnswer);
         Answer newFeedback = new Answer(
@@ -88,9 +123,45 @@ public class AnswerService {
         );
         answerRepository.save(newAnswer);
         projectCsQuestion.markAsDone();
+        projectCsQuestion.markAsCorrect();
         userStudyLogService.updateSolvedCount(user.getId());
         questionRepository.save(projectCsQuestion);
         String prompt = gptService.createPromptForAnswerProject(projectCsQuestion.getRelatedCode(), projectCsQuestion.getQuestion(), answer);
+        String generatedAnswer = gptService.callGptApi(prompt);
+        generatedAnswer = getFeedback(generatedAnswer);
+        Answer newFeedback = new Answer(
+                generatedAnswer,
+                LocalDateTime.now(),
+                Author.AI,
+                csQuestionId,
+                null
+        );
+        return answerRepository.save(newFeedback);
+    }
+    public Answer createAnswer2(String githubId, Long csQuestionId) {
+        User user = userService.findByGithubId(githubId);
+        Question projectCsQuestion = questionRepository.findById(csQuestionId)
+                .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
+        if (!user.getId().equals(projectCsQuestion.getUserId())) {
+            throw new AnswerException(
+                    AnswerErrorCode.UNAUTHORIZED_QUESTION_ACCESS);
+        }
+        if(projectCsQuestion.getQuestionStatus() == QuestionStatus.DONE) {
+            throw new AnswerException(AnswerErrorCode.ALREADY_DONE_ANSWER);
+        }
+        Answer newAnswer = new Answer(
+                null,
+                LocalDateTime.now(),
+                Author.USER,
+                csQuestionId,
+                null
+        );
+        answerRepository.save(newAnswer);
+        projectCsQuestion.markAsDone();
+        projectCsQuestion.markAsUnCorrect();
+        userStudyLogService.updateSolvedCount(user.getId());
+        questionRepository.save(projectCsQuestion);
+        String prompt = gptService.createPromptForAnswerProject2(projectCsQuestion.getRelatedCode(), projectCsQuestion.getQuestion());
         String generatedAnswer = gptService.callGptApi(prompt);
         generatedAnswer = getFeedback(generatedAnswer);
         Answer newFeedback = new Answer(

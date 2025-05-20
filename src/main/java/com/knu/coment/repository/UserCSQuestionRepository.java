@@ -1,5 +1,6 @@
 package com.knu.coment.repository;
 
+import com.knu.coment.dto.CategoryCorrectCountDto;
 import com.knu.coment.entity.UserCSQuestion;
 import com.knu.coment.global.CSCategory;
 import org.springframework.data.domain.Page;
@@ -53,6 +54,19 @@ public interface UserCSQuestionRepository extends JpaRepository<UserCSQuestion, 
             "WHERE uq.userId = :userId AND uq.questionStatus = 'DONE' " +
             "GROUP BY q.csCategory")
     List<Object[]> countSolvedByCategory(@Param("userId") Long userId);
+
+    @Query("""
+    SELECT new com.knu.coment.dto.CategoryCorrectCountDto(
+        q.csCategory,
+        SUM(CASE WHEN ucq.isCorrect = true THEN 1 ELSE 0 END),
+        SUM(CASE WHEN ucq.isCorrect = false THEN 1 ELSE 0 END)
+    )
+    FROM UserCSQuestion ucq
+    JOIN Question q ON ucq.questionId = q.id
+    WHERE ucq.userId = :userId
+    GROUP BY q.csCategory
+""")
+    List<CategoryCorrectCountDto> countCorrectAndIncorrectByCategory(@Param("userId") Long userId);
 
 
 

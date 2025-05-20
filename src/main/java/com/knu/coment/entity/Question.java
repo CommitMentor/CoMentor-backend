@@ -46,6 +46,7 @@ public class Question {
     private Long userId;
     private Long projectId;
     private String fileName;
+    private boolean isCorrect;
 
     public Question(CSCategory csCategory, QuestionType questionType, String relatedCode, String question, LocalDateTime createAt, QuestionStatus questionStatus, String folderName, String fileName, Long userId, Long projectId) {
 
@@ -78,6 +79,12 @@ public class Question {
 
     public void unBookMark() {
         this.fileName = null;
+    }
+    public void markAsUnCorrect() {
+        this.isCorrect = false;
+    }
+    public void markAsCorrect() {
+        this.isCorrect = true;
     }
 
 }
