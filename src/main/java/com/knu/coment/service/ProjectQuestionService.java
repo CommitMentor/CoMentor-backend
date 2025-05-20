@@ -2,6 +2,7 @@ package com.knu.coment.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.knu.coment.dto.CategoryCorrectCountDto;
 import com.knu.coment.dto.gpt.*;
 import com.knu.coment.entity.*;
 import com.knu.coment.exception.ProjectException;
@@ -170,6 +171,11 @@ public class ProjectQuestionService {
                         row -> row[0].toString(),
                         row -> (Long) row[1]
                 ));
+    }
+
+    public List<CategoryCorrectCountDto> getCategoryStatsByUser(String githubId) {
+        Long userId = userService.findByGithubId(githubId).getId();
+        return questionRepository.countCorrectAndIncorrectByCategory(userId);
     }
 
 }

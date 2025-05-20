@@ -1,5 +1,6 @@
 package com.knu.coment.service;
 
+import com.knu.coment.dto.CategoryCorrectCountDto;
 import com.knu.coment.dto.cs.CSDashboard;
 import com.knu.coment.dto.cs.CSQuestionInfoResponse;
 import com.knu.coment.dto.cs.QuestionListDto;
@@ -112,6 +113,11 @@ public class CSQuestionService {
                         row -> row[0].toString(),
                         row -> (Long) row[1]
                 ));
+    }
+
+    public List<CategoryCorrectCountDto> getCategoryStatsByUser(String githubId) {
+        Long userId = userService.findByGithubId(githubId).getId();
+        return userCSQuestionRepository.countCorrectAndIncorrectByCategory(userId);
     }
 
 }
