@@ -108,16 +108,33 @@ public class CSQuestionService {
         User user = userService.findByGithubId(githubId);
         List<Object[]> rawResults = userCSQuestionRepository.countSolvedByCategory(user.getId());
 
-        return rawResults.stream()
+        Map<CSCategory, Long> resultMap = rawResults.stream()
                 .collect(Collectors.toMap(
-                        row -> row[0].toString(),
+                        row -> (CSCategory) row[0],
                         row -> (Long) row[1]
+                ));
+        return Arrays.stream(CSCategory.values())
+                .collect(Collectors.toMap(
+                        Enum::name,
+                        category -> resultMap.getOrDefault(category, 0L)
                 ));
     }
 
+
     public List<CategoryCorrectCountDto> getCategoryStatsByUser(String githubId) {
         Long userId = userService.findByGithubId(githubId).getId();
-        return userCSQuestionRepository.countCorrectAndIncorrectByCategory(userId);
+        List<CategoryCorrectCountDto> rawStats = userCSQuestionRepository.countCorrectAndIncorrectByCategory(userId);
+
+        Map<CSCategory, CategoryCorrectCountDto> resultMap = rawStats.stream()
+                .collect(Collectors.toMap(CategoryCorrectCountDto::category, dto -> dto));
+
+        return Arrays.stream(CSCategory.values())
+                .map(category -> resultMap.getOrDefault(
+                        category,
+                        new CategoryCorrectCountDto(category, 0L, 0L)
+                ))
+                .toList();
     }
+
 
 }

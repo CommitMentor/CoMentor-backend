@@ -20,10 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -166,16 +163,31 @@ public class ProjectQuestionService {
         User user = userService.findByGithubId(githubId);
         List<Object[]> rawResults = questionRepository.countSolvedByCategory(user.getId());
 
-        return rawResults.stream()
+        Map<CSCategory, Long> resultMap = rawResults.stream()
                 .collect(Collectors.toMap(
-                        row -> row[0].toString(),
+                        row -> (CSCategory) row[0],
                         row -> (Long) row[1]
+                ));
+        return Arrays.stream(CSCategory.values())
+                .collect(Collectors.toMap(
+                        Enum::name,
+                        category -> resultMap.getOrDefault(category, 0L)
                 ));
     }
 
     public List<CategoryCorrectCountDto> getCategoryStatsByUser(String githubId) {
         Long userId = userService.findByGithubId(githubId).getId();
-        return questionRepository.countCorrectAndIncorrectByCategory(userId);
+        List<CategoryCorrectCountDto> rawStats = questionRepository.countCorrectAndIncorrectByCategory(userId);
+
+        Map<CSCategory, CategoryCorrectCountDto> resultMap = rawStats.stream()
+                .collect(Collectors.toMap(CategoryCorrectCountDto::category, dto -> dto));
+
+        return Arrays.stream(CSCategory.values())
+                .map(category -> resultMap.getOrDefault(
+                        category,
+                        new CategoryCorrectCountDto(category, 0L, 0L)
+                ))
+                .toList();
     }
 
 }
