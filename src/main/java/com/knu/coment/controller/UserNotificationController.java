@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -52,6 +53,7 @@ public class UserNotificationController {
             @ApiResponse(responseCode = "404", description = "알림 수신 확인 실패"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
+    @Transactional
     public ResponseEntity<?> markAsRead(@AuthenticationPrincipal UserDetails userDetails, @RequestParam Long id) {
         userNotificationRepository.findById(id).ifPresent(UserNotification::markAsRead);
         return ApiResponseUtil.ok(

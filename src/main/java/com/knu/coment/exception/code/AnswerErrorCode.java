@@ -13,7 +13,7 @@ public enum AnswerErrorCode implements ErrorCode {
     UNAUTHORIZED_QUESTION_ACCESS(HttpStatus.FORBIDDEN, "해당 질문에 대한 권한이 없습니다."),
     NOT_RECOMMENDED_QUESTION(HttpStatus.BAD_REQUEST, "추천된 질문이 아닙니다."),
     UPDATE_ERROR(HttpStatus.BAD_REQUEST, "답변을 입력해주세요"),
-    FEEDBACK_PARSE_ERROR(HttpStatus.NOT_FOUND, "피드백 변환 오류"),;
+    FEEDBACK_PARSE_ERROR(HttpStatus.NOT_FOUND, "피드백 변환 오류");
 
 
     private final HttpStatus httpStatus;

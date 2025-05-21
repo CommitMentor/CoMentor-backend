@@ -8,6 +8,7 @@ import com.knu.coment.entity.FcmToken;
 import com.knu.coment.repository.FcmTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -46,6 +47,7 @@ public class FcmService {
         }
     }
 
+    @Transactional
     public void deleteToken(String token) {
 
         fcmTokenRepository.deleteByFcmToken(token);
