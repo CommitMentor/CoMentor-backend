@@ -24,17 +24,21 @@ public class FcmService {
                         () -> fcmTokenRepository.save(new FcmToken(userId, fcmToken))
                 );
     }
-    public void sendToUser(Long userId, String title, String body) {
+    public void sendToUser(Long userId, String title, String body, String type, String url) {
         List<FcmToken> tokens = fcmTokenRepository.findByUserId(userId);
         for (FcmToken token : tokens) {
-            send(token.getFcmToken(), title, body);
+            send(token.getFcmToken(), title, body, type, url);
         }
     }
 
-    private void send(String token, String title, String body) {
+    private void send(String token, String title, String body, String type, String url) {
         try {
             Message message = Message.builder()
                     .setToken(token)
+                    .putData("title", title)
+                    .putData("body", body)
+                    .putData("type", type)
+                    .putData("url", url)
                     .setNotification(Notification.builder()
                             .setTitle(title)
                             .setBody(body)

@@ -4,6 +4,7 @@ import com.knu.coment.entity.User;
 import com.knu.coment.entity.UserNotification;
 import com.knu.coment.repository.UserNotificationRepository;
 import com.knu.coment.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -18,13 +19,19 @@ public class NotificationService {
     private final UserRepository userRepository;
     private final UserNotificationRepository userNotificationRepository;
 
+//    @PostConstruct
+//    public void init() {
+//        sendDailyNotifications();
+//    }
     @Scheduled(cron = "0 0 10 * * *", zone = "Asia/Seoul")
     public void sendDailyNotifications() {
         String title = "📨오늘의 CS 질문 생성";
         String body = "지금 바로 도전해보세요!";
+        String type = "DAILY";
+        String url = "/question/list";
         List<User> users = userRepository.findByNotificationTrue();
         for (User user : users) {
-            fcmService.sendToUser(user.getId(), title, body);
+            fcmService.sendToUser(user.getId(), title, body, type, url);
             userNotificationRepository.save(
                     new UserNotification(user.getId(), title, body)
             );
@@ -37,7 +44,7 @@ public class NotificationService {
 
         for (User user : inactiveUsers) {
             if (Boolean.TRUE.equals(user.getNotification())) {
-                fcmService.sendToUser(user.getId(), "⏰학습 리마인더", "학습을 다시 시작해보세요!");
+                fcmService.sendToUser(user.getId(), "⏰학습 리마인더", "학습을 다시 시작해보세요!","REMINDER", "/project");
             }
         }
     }
