@@ -31,7 +31,7 @@ jobs:
           chmod 777 ./gradlew
           ./gradlew clean assemble -x test
 
-      # ⬇️ 로그인 액션 v3 로 교체
+      # 1) Docker Hub 로그인 (v3)
       - name: Login to DockerHub
         if: github.event_name == 'push'
         uses: docker/login-action@v3
@@ -39,7 +39,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}   # 로그인할 '개인 계정' id (소문자)
           password: ${{ secrets.DOCKERHUB_TOKEN }}      # Docker Hub Access Token
 
-      # ⬇️ 푸시 대상 네임스페이스/리포 존재 & 권한 체크 (푸시 전)
+      # 2) 푸시 대상 리포 존재/권한 확인 (빌드 태깅/푸시 전에!)
       - name: Who am I & repo exists?
         if: github.event_name == 'push'
         env:
@@ -57,7 +57,7 @@ jobs:
             && echo "Repo exists ✅" \
             || (echo "Repo missing or no access ❌ (네임스페이스/권한/오타 확인)"; exit 1)
 
-      # ⬇️ 태그에 '네임스페이스/리포' 사용 (기존 USERNAME/REPONAME 사용 X)
+      # 3) 이미지 태그(네임스페이스/리포) → 푸시
       - name: Build Docker Image
         if: github.event_name == 'push'
         env:
@@ -69,4 +69,65 @@ jobs:
             --build-arg PROFILES=prod \
             -t ${NS}/${REPO}:latest .
 
-      - name: Push Docker Ima
+      - name: Push Docker Image to Docker Hub
+        if: github.event_name == 'push'
+        env:
+          NS:   ${{ secrets.DOCKERHUB_NAMESPACE }}
+          REPO: ${{ secrets.DOCKERHUB_REPO }}
+        run: |
+          echo "Pushing docker.io/${NS}/${REPO}:latest"
+          docker push ${NS}/${REPO}:latest
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      # 배포 단계에서도 로그인 필요
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 불필요했던 '빈 SSH 접속' 스텝 제거하고, 아래처럼 각 스텝에 script를 명확히 둡니다.
+      - name: Stop current server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.LIVE_SERVER_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            if sudo docker ps -a --format '{{.Names}}' | grep -q "^main-server$"; then
+              sudo docker stop main-server
+              sudo docker rm main-server
+            else
+              echo "Container main-server does not exist. Skipping stop and remove."
+            fi
+
+      - name: Pull and Deploy Docker Image
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.LIVE_SERVER_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            sudo docker pull ${{ secrets.DOCKERHUB_NAMESPACE }}/${{ secrets.DOCKERHUB_REPO }}:latest
+            echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" > .env
+            sudo docker-compose --env-file .env -f docker-compose.yml up -d
+
+      - name: Delete Old Docker Image
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.LIVE_SERVER_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            dangling_images=$(sudo docker images -f "dangling=true" -q)
+            if [ ! -z "$dangling_images" ]; then
+              sudo docker rmi $dangling_images
+            else
+              echo "No dangling images found"
+            fi
