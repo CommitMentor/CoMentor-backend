@@ -1,12 +1,10 @@
 FROM amazoncorretto:17-alpine-jdk
 
 ARG JAR_FILE=build/libs/*.jar
-ARG FIREBASE_CREDENTIAL_BASE64
 ARG PROFILES
 
-ENV FIREBASE_CREDENTIAL_BASE64=${FIREBASE_CREDENTIAL_BASE64}
 ENV PROFILES=${PROFILES}
 
 COPY ${JAR_FILE} app.jar
 
-ENTRYPOINT ["sh", "-c", "java -Dspring.profiles.active=$PROFILES -DFIREBASE_CREDENTIAL_BASE64=$FIREBASE_CREDENTIAL_BASE64 -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Dspring.profiles.active=$PROFILES -jar app.jar"]

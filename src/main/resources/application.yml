@@ -15,8 +15,6 @@ logging:
     level:
         org.springframework.security: DEBUG
 
-firebase:
-  credential-base64: ${FIREBASE_CREDENTIAL_BASE64}
 
 #springdoc:
 #  swagger-ui:
