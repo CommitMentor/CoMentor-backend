@@ -49,6 +49,24 @@ jobs:
     - name: Push Docker Image to Docker Hub
       if: github.event_name == 'push'
       run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}:latest
+
+    - name: Who am I & repo exists?
+      if: github.event_name == 'push'
+      env:
+        NS:   ${{ secrets.DOCKERHUB_NAMESPACE }}
+        REPO: ${{ secrets.DOCKERHUB_REPO }}
+        U:    ${{ secrets.DOCKERHUB_USERNAME }}
+        T:    ${{ secrets.DOCKERHUB_TOKEN }}
+      run: |
+        echo "== docker info username =="
+        docker info | grep -i 'Username' || true
+        echo "== push target = docker.io/${NS}/${REPO}:latest =="
+
+        echo "== check repo exists on Docker Hub =="
+        curl -fsSL -u "${U}:${T}" "https://hub.docker.com/v2/repositories/${NS}/${REPO}/" >/dev/null \
+          && echo "Repo exists ✅" \
+          || (echo "Repo missing or no access ❌ (네임스페이스/권한/오타 확인)"; exit 1)
+
       
   deploy:
     needs: build
