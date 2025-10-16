@@ -34,10 +34,11 @@ public class Project {
         this.userId = userId;
         this.repoId = repoId;
     }
-    public void update(String description, String role, Status status){
+    public void update(String description, String role, Status status) {
         this.description = description;
         this.role = role;
         this.status = status;
+        this.updatedAt = LocalDateTime.now();
     }
 
 }

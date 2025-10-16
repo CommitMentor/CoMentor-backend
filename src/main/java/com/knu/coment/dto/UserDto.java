@@ -3,6 +3,7 @@ package com.knu.coment.dto;
 import com.knu.coment.entity.User;
 import com.knu.coment.entity.UserStack;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 
 @Getter
 public class UserDto {
+    @Email
     @NotNull(message = "email cannot be null")
     @Schema(description = "사용자 이메일", example = "example@gmail.com")
     private String email;
