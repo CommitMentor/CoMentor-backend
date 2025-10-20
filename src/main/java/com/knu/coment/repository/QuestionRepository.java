@@ -13,7 +13,8 @@ import java.util.Optional;
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
     List<Question> findAllByProjectId(Long projectId);
-    List<Question> findAllByFileName(String fileName);
+
+    List<Question> findAllByUserIdAndFileName(Long userId, String fileName);
 
     Optional<Question> findByIdAndUserId(Long questionId, Long userId);
     @Query(value = """

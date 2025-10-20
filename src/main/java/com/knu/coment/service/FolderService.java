@@ -48,7 +48,7 @@ public class FolderService {
 
         List<FolderCsQuestionListDto> result = new ArrayList<>();
 
-        List<Question> projectQuestions = questionRepository.findAllByFileName(folder.getFileName());
+        List<Question> projectQuestions = questionRepository.findAllByUserIdAndFileName(user.getId(), folder.getFileName());
         result.addAll(
                 projectQuestions.stream()
                         .map(q -> {
@@ -187,8 +187,7 @@ public class FolderService {
 
         Folder folder = folderRepository.findByUserIdAndId(user.getId(), folderId)
                 .orElseThrow(() -> new FolderException(FolderErrorCode.NOT_FOUND_FOLDER));
-
-        List<Question> questions = questionRepository.findAllByFileName(folder.getFileName());
+        List<Question> questions = questionRepository.findAllByUserIdAndFileName(user.getId(), folder.getFileName());
         for (Question question : questions) {
             question.unBookMark();
             questionRepository.save(question);
