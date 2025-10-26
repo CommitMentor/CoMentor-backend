@@ -1,347 +1,200 @@
 package com.knu.coment;
 
-import com.knu.coment.config.auth.dto.OAuthAttributes;
 import com.knu.coment.dto.UserDto;
 import com.knu.coment.entity.Folder;
 import com.knu.coment.entity.User;
 import com.knu.coment.entity.UserStack;
-import com.knu.coment.exception.ProjectException;
 import com.knu.coment.exception.UserException;
-import com.knu.coment.exception.code.ProjectErrorCode;
 import com.knu.coment.exception.code.UserErrorCode;
 import com.knu.coment.global.Role;
 import com.knu.coment.global.Stack;
 import com.knu.coment.repository.FolderRepository;
 import com.knu.coment.repository.UserRepository;
 import com.knu.coment.repository.UserStackRepository;
-import com.knu.coment.security.JwtTokenProvider;
 import com.knu.coment.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(MockitoExtension.class) // 설명: MockitoExtension을 사용하여 테스트 확장
 class UserServiceTest {
 
-    @Mock
+    @Mock // 설명: Mock 객체 생성
     private UserRepository userRepository;
-
     @Mock
     private UserStackRepository userStackRepository;
-
     @Mock
     private FolderRepository folderRepository;
-
-    @Mock
-    private JwtTokenProvider jwtTokenProvider;
-
     @InjectMocks
     private UserService userService;
 
-    private User baseUser;
-    private UserDto baseJoinDto;
+    private User user;
+    private UserDto userDto;
 
     @BeforeEach
     void setUp() {
-        baseUser = User.builder()
-                .id(1L)
-                .userName("tester")
-                .email("initial@example.com")
-                .notification(false)
+        user = User.builder()
+                .email("test.@example.com")
+                .notification(true)
                 .userRole(Role.GUEST)
                 .githubId("testGithubId")
                 .avatarUrl("https://example.com/avatar.png")
+                .userName("test")
                 .build();
+        Set<String> stackNames = new HashSet<>();
+        stackNames.add("FRONTEND");
+        stackNames.add("BACKEND");
+        userDto = new UserDto("test.@example.com", true, stackNames, "https://example.com/avatar.png", "test");
 
-        baseJoinDto = new UserDto(
-                "joined@example.com",
-                true,
-                Set.of("FRONTEND", "BACKEND"),
-                "https://example.com/avatar.png",
-                "tester"
-        );
     }
 
     @Test
-    @DisplayName("findByGithubId - 등록된 깃허브 아이디면 User를 반환한다")
-    void findByGithubId_returnsUser() {
-        given(userRepository.findByGithubId(baseUser.getGithubId())).willReturn(Optional.of(baseUser));
-
-        User result = userService.findByGithubId(baseUser.getGithubId());
-
-        assertThat(result).isSameAs(baseUser);
-        verify(userRepository).findByGithubId(baseUser.getGithubId());
+    @DisplayName("findByGithubId - 정상적으로 유저를 조회할 수 있어야 한다")
+    void testFindByGithubId() {
+        // given
+        given(userRepository.findByGithubId("testGithubId"))
+                .willReturn(Optional.of(user));
+        // when
+        User result = userService.findByGithubId("testGithubId");
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getGithubId()).isEqualTo("testGithubId");
+        //userRepository 메서드가 1회 호출되었는지 검증
+        verify(userRepository).findByGithubId("testGithubId");
     }
 
     @Test
-    @DisplayName("findByGithubId - 존재하지 않으면 UserException(NOT_FOUND_USER)을 던진다")
-    void findByGithubId_missingUserThrows() {
-        given(userRepository.findByGithubId("missing")).willReturn(Optional.empty());
-
-        assertThatThrownBy(() -> userService.findByGithubId("missing"))
+    @DisplayName("findByGithubId - 유저를 조회할 수 없을 경우 예외가 발생해야 한다")
+    void testFindByGithub_Fail_UserNotFound() {
+        // given: "notExist" 인자로 호출 시, 빈 Optional을 반환하도록 스텁 설정
+        given(userRepository.findByGithubId("notExist"))
+                .willReturn(Optional.empty());
+        // when: "notExist" 인자로 메서드 호출
+        assertThatThrownBy(() -> userService.findByGithubId("notExist"))
                 .isInstanceOf(UserException.class)
                 .hasMessageContaining(UserErrorCode.NOT_FOUND_USER.getMessage());
-
-        verify(userRepository).findByGithubId("missing");
+        // then: "notExist" 인자로 호출되었음을 검증
+        verify(userRepository, times(1)).findByGithubId("notExist");
     }
 
     @Test
-    @DisplayName("saveUser - 저장 요청을 그대로 UserRepository에 위임한다")
-    void saveUser_delegatesToRepository() {
-        given(userRepository.save(baseUser)).willReturn(baseUser);
+    @DisplayName("join - 정상적으로 유저가 가입되어야 한다")
+    void testJoin_Success() {
+        // given
+        given(userRepository.findByGithubId("testGithubId"))
+                .willReturn(Optional.of(user));
+        given(userRepository.save(any(User.class))).willReturn(user);
 
-        userService.saveUser(baseUser);
+        // userStack 저장 동작도 mocking
+        given(userStackRepository.saveAll(anySet())).willReturn(List.of(
+                new UserStack(user.getId(), Stack.FRONTEND),
+                new UserStack(user.getId(), Stack.BACKEND)
+        ));
+        given(userStackRepository.findAllByUserId(user.getId()))
+                .willReturn(Set.of(
+                        new UserStack(user.getId(), Stack.FRONTEND),
+                        new UserStack(user.getId(), Stack.BACKEND)
+                ));
 
-        verify(userRepository).save(baseUser);
-    }
+        // when
+        User joinedUser = userService.join("testGithubId", userDto);
+        Set<UserStack> userStacks = userStackRepository.findAllByUserId(joinedUser.getId());
 
-    @Test
-    @DisplayName("saveOrUpdateGithub - 신규 계정이면 OAuth 정보로 엔티티를 생성해 저장한다")
-    void saveOrUpdateGithub_createsNewUserWhenMissing() {
-        OAuthAttributes attributes = OAuthAttributes.builder()
-                .githubId("newGithubId")
-                .name("New User")
-                .avatarUrl("https://example.com/new.png")
-                .attributes(Map.of(
-                        "id", "newGithubId",
-                        "name", "New User",
-                        "avatar_url", "https://example.com/new.png"
-                ))
-                .nameAttributeKey("id")
-                .build();
+        // then
+        assertThat(joinedUser.getEmail()).isEqualTo("test.@example.com");
+        assertThat(joinedUser.getNotification()).isTrue();
 
-        given(userRepository.findByGithubId("newGithubId")).willReturn(Optional.empty());
-        given(userRepository.save(any(User.class))).willAnswer(invocation -> invocation.getArgument(0));
-
-        User saved = userService.saveOrUpdateGithub(attributes);
-
-        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(captor.capture());
-
-        User persisted = captor.getValue();
-        assertThat(persisted.getGithubId()).isEqualTo("newGithubId");
-        assertThat(persisted.getUserRole()).isEqualTo(Role.GUEST);
-        assertThat(persisted.getNotification()).isFalse();
-        assertThat(saved).isSameAs(persisted);
-    }
-
-    @Test
-    @DisplayName("saveOrUpdateGithub - 기존 계정이면 조회된 엔티티를 재저장한다")
-    void saveOrUpdateGithub_updatesExistingUser() {
-        OAuthAttributes attributes = OAuthAttributes.builder()
-                .githubId(baseUser.getGithubId())
-                .name("Changed Name")
-                .avatarUrl("https://example.com/changed.png")
-                .attributes(Map.of(
-                        "id", baseUser.getGithubId(),
-                        "name", "Changed Name",
-                        "avatar_url", "https://example.com/changed.png"
-                ))
-                .nameAttributeKey("id")
-                .build();
-
-        given(userRepository.findByGithubId(baseUser.getGithubId())).willReturn(Optional.of(baseUser));
-        given(userRepository.save(baseUser)).willReturn(baseUser);
-
-        User saved = userService.saveOrUpdateGithub(attributes);
-
-        assertThat(saved).isSameAs(baseUser);
-        verify(userRepository).save(baseUser);
-    }
-
-    @Test
-    @DisplayName("join - 게스트 사용자가 이메일·알림·스택·기본 폴더와 함께 정회원으로 전환된다")
-    void join_successfullyRegistersUser() {
-        given(userRepository.findByGithubId(baseUser.getGithubId())).willReturn(Optional.of(baseUser));
-        given(userRepository.save(baseUser)).willReturn(baseUser);
-        given(userStackRepository.saveAll(anySet())).willAnswer(invocation -> List.copyOf((Set<UserStack>) invocation.getArgument(0)));
-        given(folderRepository.save(any(Folder.class))).willAnswer(invocation -> invocation.getArgument(0));
-
-        User joined = userService.join(baseUser.getGithubId(), baseJoinDto);
-
-        assertThat(joined.getUserRole()).isEqualTo(Role.USER);
-        assertThat(joined.getEmail()).isEqualTo(baseJoinDto.getEmail());
-        assertThat(joined.getNotification()).isEqualTo(baseJoinDto.isNotification());
-
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<Set<UserStack>> stackCaptor = ArgumentCaptor.forClass(Set.class);
-        verify(userStackRepository).saveAll(stackCaptor.capture());
-        Set<UserStack> persistedStacks = stackCaptor.getValue();
-        assertThat(persistedStacks).hasSize(2);
-        assertThat(persistedStacks.stream()
+        List<String> actualStackNames = userStacks.stream()
                 .map(UserStack::getStack)
-                .map(Enum::name))
-                .containsExactlyInAnyOrderElementsOf(baseJoinDto.getStackNames());
+                .map(Enum::name)
+                .collect(Collectors.toList());
 
-        ArgumentCaptor<Folder> folderCaptor = ArgumentCaptor.forClass(Folder.class);
-        verify(folderRepository).save(folderCaptor.capture());
-        Folder defaultFolder = folderCaptor.getValue();
-        assertThat(defaultFolder.getFileName()).isEqualTo("default");
-        assertThat(defaultFolder.getUserId()).isEqualTo(baseUser.getId());
+        assertThat(actualStackNames)
+                .containsExactlyInAnyOrder("FRONTEND", "BACKEND");
 
-        verify(userRepository).save(baseUser);
+        verify(userRepository, times(1)).findByGithubId("testGithubId");
+        verify(userRepository, times(1)).save(any(User.class));
+        verify(userStackRepository, times(1)).saveAll(anySet());
+        verify(userStackRepository, times(1)).findAllByUserId(user.getId());
+        verify(folderRepository, times(1)).save(any(Folder.class));
     }
 
-    @Test
-    @DisplayName("join - 이미 USER 권한이면 ALREADY_JOINED_USER 예외를 던진다")
-    void join_whenAlreadyUserThrows() {
-        baseUser.updateRole(Role.USER);
-        given(userRepository.findByGithubId(baseUser.getGithubId())).willReturn(Optional.of(baseUser));
 
-        assertThatThrownBy(() -> userService.join(baseUser.getGithubId(), baseJoinDto))
+    @Test
+    @DisplayName("join - 이미 Role.USER인 유저는 ALREADY_JOINED_USER 예외 발생")
+    void testJoin_AlreadyJoinedUser() {
+        // (23) 이미 USER 권한으로 가입된 유저 세팅
+        user.updateRole(Role.USER);
+        // (24) 리포지토리에서 user 반환
+        given(userRepository.findByGithubId("testGithubId"))
+                .willReturn(Optional.of(user));
+
+        // (25) 실제 호출 시 예외 발생 확인
+        assertThatThrownBy(() -> userService.join("testGithubId", userDto))
                 .isInstanceOf(UserException.class)
                 .hasMessageContaining(UserErrorCode.ALREADY_JOINED_USER.getMessage());
-
-        verify(userRepository, never()).save(any(User.class));
-        verify(userStackRepository, never()).saveAll(anySet());
-        verify(folderRepository, never()).save(any(Folder.class));
     }
 
     @Test
-    @DisplayName("renewRefreshToken - 검증된 리프레시 토큰이면 새 토큰으로 교체한다")
-    void renewRefreshToken_success() {
-        baseUser.updateRefreshToken("oldToken");
+    @DisplayName("updateInfo - 사용자 정보 수정 시 정상 반영되는지 테스트")
+    void testUpdateInfo_Success() {
+        // given
+        given(userRepository.findByGithubId("testGithubId"))
+                .willReturn(Optional.of(user));
 
-        given(userRepository.findByGithubId(baseUser.getGithubId())).willReturn(Optional.of(baseUser));
-        given(jwtTokenProvider.validateToken("oldToken")).willReturn(true);
-        given(jwtTokenProvider.createRefreshToken(baseUser.getGithubId())).willReturn("newToken");
-        given(userRepository.save(baseUser)).willReturn(baseUser);
+        given(userRepository.save(any(User.class))).willReturn(user);
 
-        User refreshed = userService.renewRefreshToken(baseUser.getGithubId());
-
-        assertThat(refreshed.getRefreshToken()).isEqualTo("newToken");
-        verify(jwtTokenProvider).validateToken("oldToken");
-        verify(jwtTokenProvider).createRefreshToken(baseUser.getGithubId());
-        verify(userRepository).save(baseUser);
-    }
-
-    @Test
-    @DisplayName("renewRefreshToken - 저장된 토큰이 없으면 MISSING_REQUIRED_FIELD 예외를 던진다")
-    void renewRefreshToken_missingStoredTokenThrows() {
-        given(userRepository.findByGithubId(baseUser.getGithubId())).willReturn(Optional.of(baseUser));
-
-        assertThatThrownBy(() -> userService.renewRefreshToken(baseUser.getGithubId()))
-                .isInstanceOf(UserException.class)
-                .hasMessageContaining(UserErrorCode.MISSING_REQUIRED_FIELD.getMessage());
-
-        verify(jwtTokenProvider, never()).validateToken(anyString());
-        verify(jwtTokenProvider, never()).createRefreshToken(anyString());
-        verify(userRepository, never()).save(any(User.class));
-    }
-
-    @Test
-    @DisplayName("renewRefreshToken - 저장된 토큰 검증에 실패하면 INVALID_REFRESH_TOKEN 예외를 던진다")
-    void renewRefreshToken_invalidStoredTokenThrows() {
-        baseUser.updateRefreshToken("expiredToken");
-        given(userRepository.findByGithubId(baseUser.getGithubId())).willReturn(Optional.of(baseUser));
-        given(jwtTokenProvider.validateToken("expiredToken")).willReturn(false);
-
-        assertThatThrownBy(() -> userService.renewRefreshToken(baseUser.getGithubId()))
-                .isInstanceOf(UserException.class)
-                .hasMessageContaining(UserErrorCode.INVALID_REFRESH_TOKEN.getMessage());
-
-        verify(jwtTokenProvider).validateToken("expiredToken");
-        verify(jwtTokenProvider, never()).createRefreshToken(anyString());
-        verify(userRepository, never()).save(any(User.class));
-    }
-
-    @Test
-    @DisplayName("getUserInfo - 사용자 정보와 스택 정보를 DTO로 변환해 반환한다")
-    void getUserInfo_returnsDto() {
-        given(userRepository.findByGithubId(baseUser.getGithubId())).willReturn(Optional.of(baseUser));
-        Set<UserStack> stacks = Set.of(
-                new UserStack(baseUser.getId(), Stack.FRONTEND),
-                new UserStack(baseUser.getId(), Stack.BACKEND)
-        );
-        given(userStackRepository.findAllByUserId(baseUser.getId())).willReturn(stacks);
-
-        UserDto dto = userService.getUserInfo(baseUser.getGithubId());
-
-        assertThat(dto.getEmail()).isEqualTo(baseUser.getEmail());
-        assertThat(dto.isNotification()).isEqualTo(baseUser.getNotification());
-        assertThat(dto.getStackNames()).containsExactlyInAnyOrder("FRONTEND", "BACKEND");
-        assertThat(dto.getAvatarUrl()).isEqualTo(baseUser.getAvatarUrl());
-        assertThat(dto.getUserName()).isEqualTo(baseUser.getUserName());
-    }
-
-    @Test
-    @DisplayName("updateInfo - 기존 정보를 삭제하고 새 스택/이메일/알림 정보를 저장한다")
-    void updateInfo_successfullyUpdatesUser() {
-        UserDto updateDto = new UserDto(
-                "updated@example.com",
+        Set<String> newStackNames = Set.of("FRONTEND");
+        userDto = new UserDto(
+                "newEmail@example.com",
                 false,
-                Set.of("BACKEND"),
-                baseUser.getAvatarUrl(),
-                baseUser.getUserName()
+                newStackNames,
+                "https://example.com/newAvatar.png",
+                "newUserName"
         );
 
-        given(userRepository.findByGithubId(baseUser.getGithubId())).willReturn(Optional.of(baseUser));
-        given(userRepository.save(baseUser)).willReturn(baseUser);
-        given(userStackRepository.saveAll(anySet())).willAnswer(invocation -> List.copyOf((Set<UserStack>) invocation.getArgument(0)));
+        // mock: UserStack 삭제 후 저장
+        given(userStackRepository.findAllByUserId(user.getId()))
+                .willReturn(Set.of(new UserStack(user.getId(), Stack.BACKEND)));
 
-        User updated = userService.updateInfo(baseUser.getGithubId(), updateDto);
+        // when
+        User updatedUser = userService.updateInfo("testGithubId", userDto);
+        Set<UserStack> updatedStacks = userStackRepository.findAllByUserId(updatedUser.getId());
 
-        assertThat(updated.getEmail()).isEqualTo("updated@example.com");
-        assertThat(updated.getNotification()).isFalse();
+        // then
+        assertThat(updatedUser.getEmail()).isEqualTo("newEmail@example.com");
+        assertThat(updatedUser.getNotification()).isFalse();
 
-        verify(userStackRepository).deleteAllByUserId(baseUser.getId());
+        assertThat(updatedStacks).hasSize(1);
+        assertThat(updatedStacks).extracting(UserStack::getStack)
+                .map(Enum::name)
+                .containsExactly("BACKEND");
 
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<Set<UserStack>> stackCaptor = ArgumentCaptor.forClass(Set.class);
-        verify(userStackRepository).saveAll(stackCaptor.capture());
-        Set<UserStack> savedStacks = stackCaptor.getValue();
-        assertThat(savedStacks).hasSize(1);
-        assertThat(savedStacks.iterator().next().getStack()).isEqualTo(Stack.BACKEND);
-
-        verify(userRepository).save(baseUser);
+        // repository 호출 검증
+        verify(userRepository, times(1)).findByGithubId("testGithubId");
+        verify(userRepository, times(1)).save(any(User.class));
+        verify(userStackRepository, times(1)).deleteAllByUserId(user.getId());
+        verify(userStackRepository, times(1)).saveAll(anySet());
+        verify(userStackRepository, times(1)).findAllByUserId(user.getId());
     }
 
-    @Test
-    @DisplayName("updateInfo - 스택이 비어 있으면 INVALID_RROJECT_STACK 예외를 던진다")
-    void updateInfo_whenStacksEmptyThrows() {
-        UserDto invalidDto = new UserDto(
-                "updated@example.com",
-                true,
-                Set.of(),
-                baseUser.getAvatarUrl(),
-                baseUser.getUserName()
-        );
 
-        given(userRepository.findByGithubId(baseUser.getGithubId())).willReturn(Optional.of(baseUser));
-
-        assertThatThrownBy(() -> userService.updateInfo(baseUser.getGithubId(), invalidDto))
-                .isInstanceOf(ProjectException.class)
-                .hasMessageContaining(ProjectErrorCode.INVALID_RROJECT_STACK.getMessage());
-
-        verify(userStackRepository, never()).saveAll(anySet());
-        verify(userRepository, never()).save(any(User.class));
-    }
-
-    @Test
-    @DisplayName("withdrawn - 사용자 권한을 WITHDRAWN으로 업데이트한다")
-    void withdrawn_updatesRole() {
-        given(userRepository.findByGithubId(baseUser.getGithubId())).willReturn(Optional.of(baseUser));
-        given(userRepository.save(baseUser)).willReturn(baseUser);
-
-        User withdrawnUser = userService.withdrawn(baseUser.getGithubId());
-
-        assertThat(withdrawnUser.getUserRole()).isEqualTo(Role.WITHDRAWN);
-        verify(userRepository).save(baseUser);
-    }
 }

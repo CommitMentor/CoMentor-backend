@@ -19,7 +19,6 @@ import java.util.Optional;
 @Repository
 public interface UserCSQuestionRepository extends JpaRepository<UserCSQuestion, Long> {
 
-    List<UserCSQuestion> findAllByUserIdAndFileId(Long userId, Long fileId);
     boolean existsByUserIdAndDate(Long userId, LocalDate date);
 
     Page<UserCSQuestion> findAllByUserId(Long userId, Pageable pageable);
