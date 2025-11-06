@@ -80,7 +80,7 @@ public class AnswerService {
         Question projectCsQuestion = questionRepository.findById(questionId)
                 .orElseThrow(() -> new QuestionException(QuestionErrorCode.NOT_FOUND_QUESTION));
         Answer newAnswer = new Answer(
-                null,
+                "모르겠습니다.",
                 LocalDateTime.now(),
                 Author.USER,
                 questionId,
